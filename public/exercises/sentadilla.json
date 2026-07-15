@@ -1,0 +1,27 @@
+{
+  "joints": {
+    "shoulder_left": { "x": 0.4, "y": 0.3 },
+    "shoulder_right": { "x": 0.6, "y": 0.3 },
+    "knee_left": { "x": 0.45, "y": 0.7 },
+    "knee_right": { "x": 0.55, "y": 0.7 },
+    "hip_left": { "x": 0.4, "y": 0.5 },
+    "hip_right": { "x": 0.6, "y": 0.5 }
+  },
+  "angles": {
+    "knee": {
+      "min": 80,
+      "max": 100,
+      "feedback": "Alinea tus rodillas con los dedos de los pies"
+    },
+    "back": {
+      "min": 160,
+      "max": 180,
+      "feedback": "Mantén la espalda recta"
+    },
+    "hip": {
+      "min": 70,
+      "max": 90,
+      "feedback": "Mantén la cadera alineada con los hombros"
+    }
+  }
+}

@@ -1,0 +1,20 @@
+node_modules/
+*.apk
+.env
+dist/
+build/
+ComfyUI/
+.claude/
+.codex_tmp/
+.gemini/
+.manus-logs/
+.qodo/
+.vscode/
+
+# Flutter specifics
+ferfit_flutter/build/
+ferfit_flutter/.dart_tool/
+ferfit_flutter/.pub-cache/
+ferfit_flutter/.pub/
+ferfit_flutter/*.iml
+ferfit_flutter/.idea/
