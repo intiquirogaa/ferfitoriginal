@@ -3,8 +3,10 @@
 > **Propósito:** memoria operativa entre sesiones de Grok.  
 > Al empezar un chat nuevo, leer este archivo. Al cerrar trabajo útil, **agregar una entrada** al final (fecha + qué se hizo + APK/paths si aplica).
 
-**Última actualización:** 2026-07-08 (APK release con animaciones)  
+**Última actualización:** 2026-07-17 (push origin/main + checklist VPS)  
 **Relacionados:** `BITACORA.md` (diseño/producto), `docs/` (arquitectura), `hy3bitacotra.md` (sesión gráficos/CORS).
+
+**Al reabrir:** leer §2 (foco) + §7 (2026-07-17). Flutter API → `http://168.181.187.209:3000/api/mobile`.
 
 ---
 
@@ -22,6 +24,25 @@ Plataforma de fitness con planes de **entrenamiento + nutrición** generados por
 ---
 
 ## 2. Foco actual de trabajo (contexto Grok)
+
+### 2.0 Estado al cerrar 2026-07-17 (handoff mañana)
+
+| Tema | Estado |
+|---|---|
+| **Cambiar este ejercicio** | ✅ Implementado (backend + web + Flutter + tests 5/5). **No** está en la APK aún. |
+| **Tour Feo (onboarding)** | ✅ En código Flutter; sí en APK del 16/07 ~22:17 |
+| **APK más reciente** | `FerFit-release.apk` / `app-release.apk` (~317 MB, 16/07 22:17) — **sin** replaceExercise |
+| **Git** | Muchos cambios sin commitear en `main` (working tree sucio; un solo commit histórico `d3c1ada`) |
+
+**Siguiente sesión — opciones naturales:**
+1. Recompilar APK release para probar “Cambiar este ejercicio” + tour en dispositivo
+2. Probar en web (`npm run dev`) el botón en `GeneratedTrainingPlanView`
+3. Completar demos Feo faltantes (ARMS/tríceps, CORE, CARDIO_MOBILITY) — ver plan inventarios en sesión Grok `plan.md` / `docs/FEO_EXERCISE_INVENTORY.md`
+4. Otra feature roadmap: Chain of Thought multi-paso en generación de planes; cerrar economía tienda Feo; ligas
+
+**Convenciones que no re-discutir:** mascota = **Feo**; notifs engagement automáticas (sin horarios user); Flutter solo REST mobile; textos UI en español.
+
+### 2.1 Histórico reciente (contexto)
 
 En sesiones recientes se trabajó sobre la **APK Flutter**, en particular:
 
@@ -236,6 +257,52 @@ Antes solo había `push_up.mp4` de pecho; ahora cada uno tiene `.jpg` + `.mp4`.
 
 Todos los ejercicios BACK del catálogo con pose + video Feo en `assets/feo_demos/`.
 Match 1:1 en `feo_exercise_catalog.dart`. Inventario actualizado.
+
+### 2026-07-09 — LEGS 20/20 + SHOULDERS 14/14 (Feo)
+
+- Completado `standing_calf_raise.mp4` (faltaba).
+- LEGS: 20 jpg+mp4 con ref `mascot_happy`.
+- SHOULDERS: 14 jpg+mp4 (press, laterales, front, reverse pec, face pull, rear delt, upright, shrugs).
+- Catálogo Flutter e inventario actualizados.
+- Pendientes: ARMS, CORE, CARDIO_MOBILITY.
+
+### 2026-07-16 — Tour Feo (onboarding) + APK release
+
+**Onboarding primera sesión (estilo Duolingo, textos ES):**
+- `ferfit_flutter/lib/onboarding/coach_tour_keys.dart` — GlobalKeys de UI
+- `ferfit_flutter/lib/onboarding/coach_tour_steps.dart` — pasos del tour
+- `ferfit_flutter/lib/widgets/feo_coach_tour.dart` — overlay Feo señalando
+- `ferfit_flutter/lib/services/onboarding_service.dart` — flag `feo_coach_tour_v1_done` en SharedPreferences
+- Integrado en `dashboard_screen.dart` (se muestra si no completó el tour)
+
+**APK release (incluye tour + demos Feo + misiones/form-check del tree actual):**
+- Build OK: `ferfit_flutter/build/app/outputs/flutter-apk/app-release.apk` (~316.8 MB)
+- Copias: `C:\Ferfit 2\FerFit-release.apk`, `C:\Ferfit 2\app-release.apk`
+- Warning no bloqueante: plugins ML Kit / home_widget usan KGP legacy
+
+**Foco próximo (de sesión previa + inventario):**
+- Completar demos Feo faltantes: ARMS (tríceps), CORE, CARDIO_MOBILITY
+- Probar tour en dispositivo real (reset: borrar app o `OnboardingService.resetTour`)
+
+### 2026-07-17 — Feature: Cambiar este ejercicio + push + VPS
+
+**Sesión:** resume → APK tour Feo → feature “Cambiar este ejercicio” → commit/push a `origin/main`.
+
+| Pieza | Path |
+|---|---|
+| Helpers catálogo | `server/_core/catalog.ts` |
+| Lógica | `server/_core/replaceExercise.ts` |
+| tRPC | `training.replaceExercise`, `training.listExerciseReplacements` |
+| Mobile | `GET/POST .../training/replace-options` y `replace-exercise` |
+| Web | `GeneratedTrainingPlanView.tsx` |
+| Flutter | `workout_tab.dart` + `api_service.dart` |
+| Tests | `replaceExercise.test.ts` (5/5) |
+
+**Comportamiento:** mismo grupo catálogo RAG; conserva sets/reps; resetea series del ejercicio; GIF best-effort; persiste `generatedContent`.
+
+**APK:** `FerFit-release.apk` del 16/07 tiene tour Feo; **no** incluye replaceExercise hasta rebuild.
+
+**VPS conocido en app:** `168.181.187.209:3000` (ver `api_service.dart` baseUrl). Deploy checklist: pull → npm i → .env prod → migrate → build → pm2 + nginx.
 
 ---
 

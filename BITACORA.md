@@ -46,7 +46,7 @@ Basado en nuestro análisis, estas son las funcionalidades estructurales que bus
 - [x] **Migrar a Salidas Estructuradas (Structured Outputs / Function Calling):** Usar `zod` y el estándar de llamadas a funciones de OpenAI para asegurar que el JSON generado nunca falle y tenga el esquema perfecto.
 - [x] **Catálogo RAG (Retrieval-Augmented Generation):** Obligar a la IA a elegir ejercicios únicamente de una lista provista de IDs de *MuscleWiki* o base de datos interna, para que ningún ejercicio quede sin imagen.
 - [ ] **Múltiples Pasos de Inferencia (Chain of Thought):** Dividir la solicitud a la IA en pasos más pequeños (Estrategia -> Selección de Ejercicios -> Nutrición) para evitar sobrecarga de contexto.
-- [ ] **Generación Granular de Ejercicios:** Añadir la funcionalidad de "Cambiar este ejercicio" para reemplazar un ejercicio puntual sin cambiar toda la rutina.
+- [x] **Generación Granular de Ejercicios:** Añadir la funcionalidad de "Cambiar este ejercicio" para reemplazar un ejercicio puntual sin cambiar toda la rutina. (2026-07-17: catálogo RAG, web + Flutter + mobile API)
 - [x] **Mejora en recolección de preferencias:** Cambiar las cajas de texto de Lesiones y Preferencias por *Tags* o *Chips* seleccionables (Ej: `[Evitar saltos]`) en el Frontend.
 
 ---
@@ -54,6 +54,12 @@ Basado en nuestro análisis, estas son las funcionalidades estructurales que bus
 ## 4. Registro de Cambios (Changelog)
 
 *En esta sección iremos anotando cronológicamente las modificaciones que hagamos en el código y las nuevas funcionalidades que vayamos implementando.*
+
+**[17-07-2026]**
+- **Feature “Cambiar este ejercicio”** (regeneración granular): backend catálogo RAG + tRPC + mobile API; UI web y Flutter.
+- Detalle operativo y handoff de sesión en `grokbitacora.md` §7 (2026-07-17).
+- Roadmap `docs/10_ROADMAP.md` actualizado (ítem marcado finalizado).
+- APK del 16/07 **no** incluye este feature; rebuild pendiente mañana si se prueba en móvil.
 
 **[04-07-2026]**
 - Análisis profundo del flujo de generación de rutinas de entrenamiento.

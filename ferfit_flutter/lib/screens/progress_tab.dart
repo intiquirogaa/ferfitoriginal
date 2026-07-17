@@ -2,6 +2,7 @@ import '../theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import '../onboarding/coach_tour_keys.dart';
 import '../services/api_service.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/badges_grid.dart';
@@ -81,21 +82,29 @@ class _ProgressTabState extends State<ProgressTab> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(
-              'Progreso',
-              style: GoogleFonts.rajdhani(
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'Historial, estadísticas y logros de\nentrenamiento',
-              style: GoogleFonts.inter(
-                fontSize: 14,
-                color: Colors.grey[400],
-                height: 1.3,
+            KeyedSubtree(
+              key: CoachTourKeys.progressHeader,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Progreso',
+                    style: GoogleFonts.rajdhani(
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Historial, estadísticas y logros de\nentrenamiento',
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      color: Colors.grey[400],
+                      height: 1.3,
+                    ),
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 24),

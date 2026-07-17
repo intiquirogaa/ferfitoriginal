@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:fl_chart/fl_chart.dart';
+import '../onboarding/coach_tour_keys.dart';
 import '../services/api_service.dart';
 import '../services/engagement_service.dart';
 import '../widgets/plan_wizard.dart';
@@ -397,16 +398,17 @@ class DashboardTabState extends State<DashboardTab> {
             ],
           ),
           const SizedBox(height: 20),
-          if (!_hasActivePlan)
-             Center(
+          KeyedSubtree(
+            key: CoachTourKeys.createPlan,
+            child: !_hasActivePlan
+             ? Center(
                child: ElevatedButton(
                  onPressed: _showCreatePlanWizard,
                  style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: Colors.black),
-                 child: const Text('Crear Plan de Entrenamiento'),
+                 child: const Text('Crear plan de entrenamiento'),
                ),
              )
-          else
-             Container(
+          : Container(
                padding: const EdgeInsets.all(16),
                decoration: BoxDecoration(
                  color: AppColors.backgroundDeep.withOpacity(0.4),
@@ -448,6 +450,7 @@ class DashboardTabState extends State<DashboardTab> {
                  ],
                ),
              ),
+          ),
         ],
       ),
     );
@@ -729,8 +732,14 @@ class DashboardTabState extends State<DashboardTab> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           _buildHubButton(context, icon: LucideIcons.store, label: 'Tienda', color: Color(0xFFFBBF24), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const FeoStoreScreen()))),
-          _buildHubButton(context, icon: LucideIcons.target, label: 'Misiones', color: AppColors.primary, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const QuestsScreen()))),
-          _buildHubButton(context, icon: LucideIcons.trophy, label: 'Ligas', color: AppColors.secondary, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LeagueScreen()))),
+          KeyedSubtree(
+            key: CoachTourKeys.hubMissions,
+            child: _buildHubButton(context, icon: LucideIcons.target, label: 'Misiones', color: AppColors.primary, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const QuestsScreen()))),
+          ),
+          KeyedSubtree(
+            key: CoachTourKeys.hubLeagues,
+            child: _buildHubButton(context, icon: LucideIcons.trophy, label: 'Ligas', color: AppColors.secondary, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LeagueScreen()))),
+          ),
           _buildHubButton(context, icon: LucideIcons.users, label: 'Amigos', color: Color(0xFFF472B6), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SocialScreen()))),
         ],
       ),
@@ -775,27 +784,30 @@ class DashboardTabState extends State<DashboardTab> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Welcome Header
-            Text.rich(
-              TextSpan(
-                children: [
-                  TextSpan(
-                    text: 'Hola, ',
-                    style: GoogleFonts.rajdhani(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
+            KeyedSubtree(
+              key: CoachTourKeys.dashboardHeader,
+              child: Text.rich(
+                TextSpan(
+                  children: [
+                    TextSpan(
+                      text: 'Hola, ',
+                      style: GoogleFonts.rajdhani(
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
                     ),
-                  ),
-                  TextSpan(
-                    text: _userName,
-                    style: GoogleFonts.rajdhani(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.primary,
+                    TextSpan(
+                      text: _userName,
+                      style: GoogleFonts.rajdhani(
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.primary,
+                      ),
                     ),
-                  ),
-                  const TextSpan(text: ' 👋', style: TextStyle(fontSize: 28)),
-                ],
+                    const TextSpan(text: ' 👋', style: TextStyle(fontSize: 28)),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 4),

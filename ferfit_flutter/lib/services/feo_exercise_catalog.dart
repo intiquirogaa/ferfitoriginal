@@ -1,5 +1,5 @@
-// Demos Feo: assets/feo_demos/{id}.jpg (+ .mp4 opcional)
-// CHEST 14 + BACK 15 (2026-07-09)
+// Demos Feo: assets/feo_demos/{id}.jpg (+ .mp4)
+// Catálogo 99 completo: CHEST/BACK/LEGS/SHOULDERS/ARMS/CORE/CARDIO (Feo ref: mascot_happy)
 
 enum FeoExerciseDemoKind {
   // CHEST (14)
@@ -33,19 +33,70 @@ enum FeoExerciseDemoKind {
   goodMorning,
   superman,
   invertedRow,
-  // otros grupos
+  // LEGS (20)
+  barbellSquat,
+  frontSquat,
+  gobletSquat,
+  bodyweightSquat,
+  legPress,
+  hackSquat,
+  bulgarianSplitSquat,
+  lunges,
+  walkingLunges,
+  romanianDeadlift,
+  stiffLeggedDeadlift,
+  legExtension,
+  legCurl,
+  seatedLegCurl,
+  lyingLegCurl,
+  hipThrust,
+  gluteBridge,
+  calfRaise,
+  seatedCalfRaise,
+  standingCalfRaise,
+  // SHOULDERS (14)
+  overheadPress,
+  dumbbellShoulderPress,
+  arnoldPress,
+  lateralRaise,
+  cableLateralRaise,
+  machineLateralRaise,
+  frontRaise,
+  dumbbellFrontRaise,
+  reversePecDeck,
+  facePull,
+  dumbbellRearDeltRow,
+  uprightRow,
+  barbellShrug,
+  dumbbellShrug,
+  // ARMS extras
+  closeGripBenchPress,
+  // CORE extras
+  russianTwist,
+  sidePlank,
+  abWheelRollout,
+  hangingLegRaise,
+  deadBug,
+  birdDog,
+  // CARDIO_MOBILITY
+  highKnees,
+  jumpRope,
+  boxJump,
+  kettlebellSwing,
+  shoulderDislocates,
+  catCow,
+  hipRotations,
+  torsoTwist,
+  // otros
   squat,
   plank,
   dumbbellCurl,
   lunge,
   burpee,
   mountainClimber,
-  overheadPress,
-  lateralRaise,
   tricepsDip,
   crunch,
   jumpingJack,
-  standingCalfRaise,
 }
 
 class FeoExerciseDemoInfo {
@@ -222,6 +273,20 @@ FeoExerciseDemoInfo? _match(String raw) {
       cue: 'Espalda apoyada; empujá los agarres sin bloquear los codos de golpe',
       poseAsset: 'assets/feo_demos/machine_chest_press.jpg',
       videoAsset: 'assets/feo_demos/machine_chest_press.mp4',
+    );
+  }
+
+  // Close-grip bench (antes del flat genérico)
+  if (_containsAny(n, [
+    'close grip bench', 'close-grip bench', 'press banca agarre cerrado',
+    'press de banca agarre cerrado', 'press agarre cerrado',
+  ])) {
+    return const FeoExerciseDemoInfo(
+      kind: FeoExerciseDemoKind.closeGripBenchPress,
+      titleEs: 'Press banca agarre cerrado',
+      cue: 'Agarre estrecho, codos cerca del torso, empujá con tríceps',
+      poseAsset: 'assets/feo_demos/close_grip_bench_press.jpg',
+      videoAsset: 'assets/feo_demos/close_grip_bench_press.mp4',
     );
   }
 
@@ -444,11 +509,11 @@ FeoExerciseDemoInfo? _match(String raw) {
     );
   }
 
-  // Deadlift (convencional y variantes RDL/SLDL usan mismo clip por ahora)
-  if (_containsAny(n, [
-    'deadlift', 'romanian deadlift', 'stiff legged deadlift',
-    'peso muerto', 'peso muerto rumano',
-  ]) && !_containsAny(n, ['rack pull'])) {
+  // Deadlift convencional (RDL/SLDL más abajo en LEGS)
+  if (_containsAny(n, ['deadlift', 'peso muerto']) &&
+      !_containsAny(n, [
+        'rack pull', 'romanian', 'stiff', 'rumano', 'piernas rigidas', 'piernas rígidas',
+      ])) {
     return const FeoExerciseDemoInfo(
       kind: FeoExerciseDemoKind.deadlift,
       titleEs: 'Peso muerto',
@@ -458,49 +523,298 @@ FeoExerciseDemoInfo? _match(String raw) {
     );
   }
 
-  // ─── Otros grupos ───
-
-  if (_containsAny(n, ['jumping jack', 'jumping jacks', 'saltos de tijera', 'jumpingjack'])) {
-    return const FeoExerciseDemoInfo(
-      kind: FeoExerciseDemoKind.jumpingJack,
-      titleEs: 'Jumping jacks',
-      cue: 'Abrí y cerrá piernas y brazos al mismo tiempo',
-      poseAsset: 'assets/feo_demos/jumping_jack.jpg',
-    );
-  }
-
-  if (_containsAny(n, ['mountain climber', 'mountain climbers', 'escalador', 'escaladores'])) {
-    return const FeoExerciseDemoInfo(
-      kind: FeoExerciseDemoKind.mountainClimber,
-      titleEs: 'Escaladores',
-      cue: 'En plancha, llevá las rodillas al pecho en alternancia',
-      poseAsset: 'assets/feo_demos/mountain_climber.jpg',
-    );
-  }
-
-  if (_containsAny(n, ['burpee', 'burpees'])) {
-    return const FeoExerciseDemoInfo(
-      kind: FeoExerciseDemoKind.burpee,
-      titleEs: 'Burpees',
-      cue: 'Agachate, plancha, pecho al piso y saltá arriba',
-      poseAsset: 'assets/feo_demos/burpee.jpg',
-    );
-  }
+  // ─── LEGS (20) ───
 
   if (_containsAny(n, [
-    'lunges', 'lunge', 'walking lunges', 'walking lunge', 'zancadas', 'zancada',
+    'bulgarian split squat', 'bulgarian', 'sentadilla bulgara', 'sentadilla búlgara',
   ])) {
     return const FeoExerciseDemoInfo(
-      kind: FeoExerciseDemoKind.lunge,
-      titleEs: 'Zancadas',
-      cue: 'Paso largo, rodilla atrás casi al piso, pecho erguido',
-      poseAsset: 'assets/feo_demos/lunge.jpg',
+      kind: FeoExerciseDemoKind.bulgarianSplitSquat,
+      titleEs: 'Sentadilla búlgara',
+      cue: 'Pie de atrás elevado; bajá la rodilla delantera controlado',
+      poseAsset: 'assets/feo_demos/bulgarian_split_squat.jpg',
+      videoAsset: 'assets/feo_demos/bulgarian_split_squat.mp4',
+    );
+  }
+
+  if (_containsAny(n, ['hack squat', 'sentadilla hack'])) {
+    return const FeoExerciseDemoInfo(
+      kind: FeoExerciseDemoKind.hackSquat,
+      titleEs: 'Hack squat',
+      cue: 'Espalda en el respaldo; empujá el piso con los talones',
+      poseAsset: 'assets/feo_demos/hack_squat.jpg',
+      videoAsset: 'assets/feo_demos/hack_squat.mp4',
+    );
+  }
+
+  if (_containsAny(n, ['front squat', 'sentadilla frontal'])) {
+    return const FeoExerciseDemoInfo(
+      kind: FeoExerciseDemoKind.frontSquat,
+      titleEs: 'Sentadilla frontal',
+      cue: 'Barra en deltoides; codos altos, torso erguido',
+      poseAsset: 'assets/feo_demos/front_squat.jpg',
+      videoAsset: 'assets/feo_demos/front_squat.mp4',
+    );
+  }
+
+  if (_containsAny(n, ['goblet squat', 'sentadilla goblet'])) {
+    return const FeoExerciseDemoInfo(
+      kind: FeoExerciseDemoKind.gobletSquat,
+      titleEs: 'Sentadilla goblet',
+      cue: 'Mancuerna al pecho; sentate entre los talones',
+      poseAsset: 'assets/feo_demos/goblet_squat.jpg',
+      videoAsset: 'assets/feo_demos/goblet_squat.mp4',
+    );
+  }
+
+  if (_containsAny(n, ['barbell squat', 'back squat', 'sentadilla con barra'])) {
+    return const FeoExerciseDemoInfo(
+      kind: FeoExerciseDemoKind.barbellSquat,
+      titleEs: 'Sentadilla con barra',
+      cue: 'Barra en trapecio; cadera atrás y pecho alto',
+      poseAsset: 'assets/feo_demos/barbell_squat.jpg',
+      videoAsset: 'assets/feo_demos/barbell_squat.mp4',
     );
   }
 
   if (_containsAny(n, [
-    'lateral raise', 'cable lateral raise', 'machine lateral raise',
-    'elevaciones laterales', 'elevacion lateral',
+    'bodyweight squat', 'air squat', 'sentadilla libre', 'sentadilla peso corporal',
+  ])) {
+    return const FeoExerciseDemoInfo(
+      kind: FeoExerciseDemoKind.bodyweightSquat,
+      titleEs: 'Sentadilla (peso corporal)',
+      cue: 'Cadera atrás, pecho alto, subí empujando el piso',
+      poseAsset: 'assets/feo_demos/bodyweight_squat.jpg',
+      videoAsset: 'assets/feo_demos/bodyweight_squat.mp4',
+    );
+  }
+
+  if (_containsAny(n, ['leg press', 'prensa de piernas', 'prensa piernas'])) {
+    return const FeoExerciseDemoInfo(
+      kind: FeoExerciseDemoKind.legPress,
+      titleEs: 'Prensa de piernas',
+      cue: 'Pies a la altura de hombros; no bloquees de golpe',
+      poseAsset: 'assets/feo_demos/leg_press.jpg',
+      videoAsset: 'assets/feo_demos/leg_press.mp4',
+    );
+  }
+
+  if (_containsAny(n, ['walking lunges', 'walking lunge', 'zancadas caminando'])) {
+    return const FeoExerciseDemoInfo(
+      kind: FeoExerciseDemoKind.walkingLunges,
+      titleEs: 'Zancadas caminando',
+      cue: 'Paso largo adelante, controlá la bajada y avanzá',
+      poseAsset: 'assets/feo_demos/walking_lunges.jpg',
+      videoAsset: 'assets/feo_demos/walking_lunges.mp4',
+    );
+  }
+
+  if (_containsAny(n, ['lunges', 'lunge', 'zancadas', 'zancada'])) {
+    return const FeoExerciseDemoInfo(
+      kind: FeoExerciseDemoKind.lunges,
+      titleEs: 'Zancadas',
+      cue: 'Paso largo, rodilla atrás casi al piso, pecho erguido',
+      poseAsset: 'assets/feo_demos/lunges.jpg',
+      videoAsset: 'assets/feo_demos/lunges.mp4',
+    );
+  }
+
+  if (_containsAny(n, [
+    'romanian deadlift', 'peso muerto rumano', 'rdl',
+  ])) {
+    return const FeoExerciseDemoInfo(
+      kind: FeoExerciseDemoKind.romanianDeadlift,
+      titleEs: 'Peso muerto rumano',
+      cue: 'Bisagra de cadera, barra cerca de piernas, ligera flexión de rodillas',
+      poseAsset: 'assets/feo_demos/romanian_deadlift.jpg',
+      videoAsset: 'assets/feo_demos/romanian_deadlift.mp4',
+    );
+  }
+
+  if (_containsAny(n, [
+    'stiff legged deadlift', 'stiff-legged deadlift',
+    'peso muerto piernas rigidas', 'peso muerto piernas rígidas',
+  ])) {
+    return const FeoExerciseDemoInfo(
+      kind: FeoExerciseDemoKind.stiffLeggedDeadlift,
+      titleEs: 'Peso muerto piernas rígidas',
+      cue: 'Piernas casi rectas; sentí el estirón en isquios',
+      poseAsset: 'assets/feo_demos/stiff_legged_deadlift.jpg',
+      videoAsset: 'assets/feo_demos/stiff_legged_deadlift.mp4',
+    );
+  }
+
+  if (_containsAny(n, ['leg extension', 'extension de cuádriceps', 'extension de cuadriceps', 'extensión de cuádriceps'])) {
+    return const FeoExerciseDemoInfo(
+      kind: FeoExerciseDemoKind.legExtension,
+      titleEs: 'Extensión de cuádriceps',
+      cue: 'Extiende rodillas sin rebotar arriba',
+      poseAsset: 'assets/feo_demos/leg_extension.jpg',
+      videoAsset: 'assets/feo_demos/leg_extension.mp4',
+    );
+  }
+
+  if (_containsAny(n, ['seated leg curl', 'curl femoral sentado'])) {
+    return const FeoExerciseDemoInfo(
+      kind: FeoExerciseDemoKind.seatedLegCurl,
+      titleEs: 'Curl femoral sentado',
+      cue: 'Llevá talones hacia el asiento controlado',
+      poseAsset: 'assets/feo_demos/seated_leg_curl.jpg',
+      videoAsset: 'assets/feo_demos/seated_leg_curl.mp4',
+    );
+  }
+
+  if (_containsAny(n, ['lying leg curl', 'curl femoral acostado', 'curl femoral tumbado'])) {
+    return const FeoExerciseDemoInfo(
+      kind: FeoExerciseDemoKind.lyingLegCurl,
+      titleEs: 'Curl femoral acostado',
+      cue: 'Talones hacia glúteos, cadera pegada al banco',
+      poseAsset: 'assets/feo_demos/lying_leg_curl.jpg',
+      videoAsset: 'assets/feo_demos/lying_leg_curl.mp4',
+    );
+  }
+
+  if (_containsAny(n, ['leg curl', 'curl femoral', 'femoral'])) {
+    return const FeoExerciseDemoInfo(
+      kind: FeoExerciseDemoKind.legCurl,
+      titleEs: 'Curl femoral',
+      cue: 'Flexioná rodillas con control, sin balancear',
+      poseAsset: 'assets/feo_demos/leg_curl.jpg',
+      videoAsset: 'assets/feo_demos/leg_curl.mp4',
+    );
+  }
+
+  if (_containsAny(n, ['hip thrust', 'empuje de cadera', 'hip thrust'])) {
+    return const FeoExerciseDemoInfo(
+      kind: FeoExerciseDemoKind.hipThrust,
+      titleEs: 'Hip thrust',
+      cue: 'Empujá cadera arriba, apretá glúteos arriba',
+      poseAsset: 'assets/feo_demos/hip_thrust.jpg',
+      videoAsset: 'assets/feo_demos/hip_thrust.mp4',
+    );
+  }
+
+  if (_containsAny(n, ['glute bridge', 'puente de gluteos', 'puente de glúteos'])) {
+    return const FeoExerciseDemoInfo(
+      kind: FeoExerciseDemoKind.gluteBridge,
+      titleEs: 'Puente de glúteos',
+      cue: 'Hombros en el piso; elevá cadera y apretá arriba',
+      poseAsset: 'assets/feo_demos/glute_bridge.jpg',
+      videoAsset: 'assets/feo_demos/glute_bridge.mp4',
+    );
+  }
+
+  if (_containsAny(n, [
+    'seated calf raise', 'elevacion de gemelos sentado', 'elevaciones de gemelos sentado',
+  ])) {
+    return const FeoExerciseDemoInfo(
+      kind: FeoExerciseDemoKind.seatedCalfRaise,
+      titleEs: 'Gemelos sentado',
+      cue: 'Subí talones al máximo, pausa y bajá',
+      poseAsset: 'assets/feo_demos/seated_calf_raise.jpg',
+      videoAsset: 'assets/feo_demos/seated_calf_raise.mp4',
+    );
+  }
+
+  if (_containsAny(n, [
+    'standing calf raise', 'standing calf raises',
+    'elevacion de gemelos de pie', 'elevaciones de gemelos de pie',
+    'pantorrilla de pie', 'gemelos de pie',
+  ])) {
+    return const FeoExerciseDemoInfo(
+      kind: FeoExerciseDemoKind.standingCalfRaise,
+      titleEs: 'Gemelos de pie',
+      cue: 'Subí los talones, pausa arriba y bajá controlado',
+      poseAsset: 'assets/feo_demos/standing_calf_raise.jpg',
+      videoAsset: 'assets/feo_demos/standing_calf_raise.mp4',
+    );
+  }
+
+  if (_containsAny(n, ['calf raise', 'elevacion de gemelos', 'elevaciones de gemelos', 'gemelos', 'pantorrillas'])) {
+    return const FeoExerciseDemoInfo(
+      kind: FeoExerciseDemoKind.calfRaise,
+      titleEs: 'Elevación de gemelos',
+      cue: 'Subí talones al máximo sin rebotar',
+      poseAsset: 'assets/feo_demos/calf_raise.jpg',
+      videoAsset: 'assets/feo_demos/calf_raise.mp4',
+    );
+  }
+
+  // squat genérico (fallback)
+  if (_containsAny(n, ['sentadilla', 'squat']) &&
+      !_containsAny(n, ['split squat', 'hack squat', 'bulgarian', 'goblet', 'front'])) {
+    return const FeoExerciseDemoInfo(
+      kind: FeoExerciseDemoKind.squat,
+      titleEs: 'Sentadilla',
+      cue: 'Cadera atrás, pecho alto, subí empujando el piso',
+      poseAsset: 'assets/feo_demos/bodyweight_squat.jpg',
+      videoAsset: 'assets/feo_demos/bodyweight_squat.mp4',
+    );
+  }
+
+  // ─── SHOULDERS (14) ───
+
+  if (_containsAny(n, ['arnold press', 'press arnold'])) {
+    return const FeoExerciseDemoInfo(
+      kind: FeoExerciseDemoKind.arnoldPress,
+      titleEs: 'Press Arnold',
+      cue: 'Rotá palmas al subir; controlá la bajada',
+      poseAsset: 'assets/feo_demos/arnold_press.jpg',
+      videoAsset: 'assets/feo_demos/arnold_press.mp4',
+    );
+  }
+
+  if (_containsAny(n, [
+    'dumbbell shoulder press', 'press de hombro con mancuernas', 'press hombro mancuernas',
+  ])) {
+    return const FeoExerciseDemoInfo(
+      kind: FeoExerciseDemoKind.dumbbellShoulderPress,
+      titleEs: 'Press de hombro con mancuernas',
+      cue: 'Empujá vertical sin arquear la lumbar',
+      poseAsset: 'assets/feo_demos/dumbbell_shoulder_press.jpg',
+      videoAsset: 'assets/feo_demos/dumbbell_shoulder_press.mp4',
+    );
+  }
+
+  if (_containsAny(n, [
+    'overhead press', 'military press', 'press militar', 'press overhead', 'shoulder press',
+    'press de hombro',
+  ])) {
+    return const FeoExerciseDemoInfo(
+      kind: FeoExerciseDemoKind.overheadPress,
+      titleEs: 'Press militar',
+      cue: 'Empujá la carga por encima de la cabeza sin arquear la lumbar',
+      poseAsset: 'assets/feo_demos/overhead_press.jpg',
+      videoAsset: 'assets/feo_demos/overhead_press.mp4',
+    );
+  }
+
+  if (_containsAny(n, [
+    'cable lateral raise', 'elevacion lateral en polea', 'elevaciones laterales en polea',
+  ])) {
+    return const FeoExerciseDemoInfo(
+      kind: FeoExerciseDemoKind.cableLateralRaise,
+      titleEs: 'Elevación lateral en polea',
+      cue: 'Codo levemente flexionado; subí a la altura del hombro',
+      poseAsset: 'assets/feo_demos/cable_lateral_raise.jpg',
+      videoAsset: 'assets/feo_demos/cable_lateral_raise.mp4',
+    );
+  }
+
+  if (_containsAny(n, [
+    'machine lateral raise', 'elevacion lateral en maquina', 'elevación lateral en máquina',
+  ])) {
+    return const FeoExerciseDemoInfo(
+      kind: FeoExerciseDemoKind.machineLateralRaise,
+      titleEs: 'Elevación lateral en máquina',
+      cue: 'Empujá los pads hacia afuera con control',
+      poseAsset: 'assets/feo_demos/machine_lateral_raise.jpg',
+      videoAsset: 'assets/feo_demos/machine_lateral_raise.mp4',
+    );
+  }
+
+  if (_containsAny(n, [
+    'lateral raise', 'elevaciones laterales', 'elevacion lateral',
   ])) {
     return const FeoExerciseDemoInfo(
       kind: FeoExerciseDemoKind.lateralRaise,
@@ -512,15 +826,195 @@ FeoExerciseDemoInfo? _match(String raw) {
   }
 
   if (_containsAny(n, [
-    'overhead press', 'shoulder press', 'military press', 'arnold press',
-    'dumbbell shoulder press', 'press militar', 'press de hombro', 'press overhead',
+    'dumbbell front raise', 'front raise', 'elevacion frontal', 'elevaciones frontales',
   ])) {
     return const FeoExerciseDemoInfo(
-      kind: FeoExerciseDemoKind.overheadPress,
-      titleEs: 'Press militar',
-      cue: 'Empujá la carga por encima de la cabeza sin arquear la lumbar',
-      poseAsset: 'assets/feo_demos/overhead_press.jpg',
-      videoAsset: 'assets/feo_demos/overhead_press.mp4',
+      kind: FeoExerciseDemoKind.frontRaise,
+      titleEs: 'Elevaciones frontales',
+      cue: 'Subí brazos al frente hasta la altura de hombros',
+      poseAsset: 'assets/feo_demos/front_raise.jpg',
+      videoAsset: 'assets/feo_demos/front_raise.mp4',
+    );
+  }
+
+  if (_containsAny(n, [
+    'reverse pec deck', 'pec deck reverse', 'aperturas inversas', 'mariposa inversa',
+  ])) {
+    return const FeoExerciseDemoInfo(
+      kind: FeoExerciseDemoKind.reversePecDeck,
+      titleEs: 'Pec deck inverso',
+      cue: 'Abrí brazos atrás enfocando deltoides posteriores',
+      poseAsset: 'assets/feo_demos/reverse_pec_deck.jpg',
+      videoAsset: 'assets/feo_demos/reverse_pec_deck.mp4',
+    );
+  }
+
+  if (_containsAny(n, ['face pull', 'jalon a la cara', 'jalón a la cara'])) {
+    return const FeoExerciseDemoInfo(
+      kind: FeoExerciseDemoKind.facePull,
+      titleEs: 'Face pull',
+      cue: 'Tirones a la cara, codos altos, rotación externa',
+      poseAsset: 'assets/feo_demos/face_pull.jpg',
+      videoAsset: 'assets/feo_demos/face_pull.mp4',
+    );
+  }
+
+  if (_containsAny(n, [
+    'dumbbell rear delt row', 'rear delt row', 'remo deltoides posterior',
+  ])) {
+    return const FeoExerciseDemoInfo(
+      kind: FeoExerciseDemoKind.dumbbellRearDeltRow,
+      titleEs: 'Remo deltoides posterior',
+      cue: 'Tirones abiertos hacia afuera, no al codo del torso',
+      poseAsset: 'assets/feo_demos/dumbbell_rear_delt_row.jpg',
+      videoAsset: 'assets/feo_demos/dumbbell_rear_delt_row.mp4',
+    );
+  }
+
+  if (_containsAny(n, ['upright row', 'remo al menton', 'remo al mentón', 'remo vertical'])) {
+    return const FeoExerciseDemoInfo(
+      kind: FeoExerciseDemoKind.uprightRow,
+      titleEs: 'Remo al mentón',
+      cue: 'Codos altos; subí la barra hasta el pecho alto',
+      poseAsset: 'assets/feo_demos/upright_row.jpg',
+      videoAsset: 'assets/feo_demos/upright_row.mp4',
+    );
+  }
+
+  if (_containsAny(n, ['barbell shrug', 'encogimientos con barra', 'encogimiento con barra'])) {
+    return const FeoExerciseDemoInfo(
+      kind: FeoExerciseDemoKind.barbellShrug,
+      titleEs: 'Encogimientos con barra',
+      cue: 'Subí hombros a las orejas sin girar el cuello',
+      poseAsset: 'assets/feo_demos/barbell_shrug.jpg',
+      videoAsset: 'assets/feo_demos/barbell_shrug.mp4',
+    );
+  }
+
+  if (_containsAny(n, [
+    'dumbbell shrug', 'encogimientos con mancuernas', 'encogimiento de hombros', 'shrugs', 'shrug',
+  ])) {
+    return const FeoExerciseDemoInfo(
+      kind: FeoExerciseDemoKind.dumbbellShrug,
+      titleEs: 'Encogimientos con mancuernas',
+      cue: 'Subí hombros vertical, pausa y bajá',
+      poseAsset: 'assets/feo_demos/dumbbell_shrug.jpg',
+      videoAsset: 'assets/feo_demos/dumbbell_shrug.mp4',
+    );
+  }
+
+  // ─── CARDIO / MOVILIDAD ───
+
+  if (_containsAny(n, ['jumping jack', 'jumping jacks', 'saltos de tijera', 'jumpingjack'])) {
+    return const FeoExerciseDemoInfo(
+      kind: FeoExerciseDemoKind.jumpingJack,
+      titleEs: 'Jumping jacks',
+      cue: 'Abrí y cerrá piernas y brazos al mismo tiempo',
+      poseAsset: 'assets/feo_demos/jumping_jack.jpg',
+      videoAsset: 'assets/feo_demos/jumping_jack.mp4',
+    );
+  }
+
+  if (_containsAny(n, ['high knees', 'high knee', 'rodillas altas', 'elevacion de rodillas', 'elevación de rodillas'])) {
+    return const FeoExerciseDemoInfo(
+      kind: FeoExerciseDemoKind.highKnees,
+      titleEs: 'Rodillas altas',
+      cue: 'Corré en el lugar llevando las rodillas al pecho',
+      poseAsset: 'assets/feo_demos/high_knees.jpg',
+      videoAsset: 'assets/feo_demos/high_knees.mp4',
+    );
+  }
+
+  if (_containsAny(n, ['jump rope', 'jumping rope', 'saltar la soga', 'cuerda', 'comba'])) {
+    return const FeoExerciseDemoInfo(
+      kind: FeoExerciseDemoKind.jumpRope,
+      titleEs: 'Saltar la soga',
+      cue: 'Saltos chicos, muñecas fluidas, ritmo constante',
+      poseAsset: 'assets/feo_demos/jump_rope.jpg',
+      videoAsset: 'assets/feo_demos/jump_rope.mp4',
+    );
+  }
+
+  if (_containsAny(n, ['box jump', 'box jumps', 'salto al cajon', 'salto al cajón', 'saltos al cajon'])) {
+    return const FeoExerciseDemoInfo(
+      kind: FeoExerciseDemoKind.boxJump,
+      titleEs: 'Salto al cajón',
+      cue: 'Impulsá con cadera y aterrizá suave sobre el cajón',
+      poseAsset: 'assets/feo_demos/box_jump.jpg',
+      videoAsset: 'assets/feo_demos/box_jump.mp4',
+    );
+  }
+
+  if (_containsAny(n, ['kettlebell swing', 'kb swing', 'swing con kettlebell', 'balanceo de kettlebell', 'swing kettlebell'])) {
+    return const FeoExerciseDemoInfo(
+      kind: FeoExerciseDemoKind.kettlebellSwing,
+      titleEs: 'Kettlebell swing',
+      cue: 'Bisagra de cadera, no sentadilla; empuje explosivo de glúteos',
+      poseAsset: 'assets/feo_demos/kettlebell_swing.jpg',
+      videoAsset: 'assets/feo_demos/kettlebell_swing.mp4',
+    );
+  }
+
+  if (_containsAny(n, [
+    'shoulder dislocates', 'shoulder dislocate', 'dislocaciones de hombro',
+    'dislocacion de hombros', 'dislocación de hombros', 'pass through',
+  ])) {
+    return const FeoExerciseDemoInfo(
+      kind: FeoExerciseDemoKind.shoulderDislocates,
+      titleEs: 'Dislocaciones de hombro',
+      cue: 'Palo con agarre amplio; pasalo por arriba sin forzar',
+      poseAsset: 'assets/feo_demos/shoulder_dislocates.jpg',
+      videoAsset: 'assets/feo_demos/shoulder_dislocates.mp4',
+    );
+  }
+
+  if (_containsAny(n, ['cat cow', 'cat-cow', 'gato gato', 'gato-vaca', 'gato vaca'])) {
+    return const FeoExerciseDemoInfo(
+      kind: FeoExerciseDemoKind.catCow,
+      titleEs: 'Gato-vaca',
+      cue: 'En cuatro apoyos, alterná arquear y redondear la espalda',
+      poseAsset: 'assets/feo_demos/cat_cow.jpg',
+      videoAsset: 'assets/feo_demos/cat_cow.mp4',
+    );
+  }
+
+  if (_containsAny(n, ['hip rotations', 'hip rotation', 'rotaciones de cadera', 'rotacion de cadera', 'rotación de cadera'])) {
+    return const FeoExerciseDemoInfo(
+      kind: FeoExerciseDemoKind.hipRotations,
+      titleEs: 'Rotaciones de cadera',
+      cue: 'Círculos controlados de cadera, tronco estable',
+      poseAsset: 'assets/feo_demos/hip_rotations.jpg',
+      videoAsset: 'assets/feo_demos/hip_rotations.mp4',
+    );
+  }
+
+  if (_containsAny(n, ['torso twist', 'torso twists', 'giros de torso', 'rotacion de torso', 'rotación de torso'])) {
+    return const FeoExerciseDemoInfo(
+      kind: FeoExerciseDemoKind.torsoTwist,
+      titleEs: 'Giro de torso',
+      cue: 'Girás el tronco manteniendo cadera al frente',
+      poseAsset: 'assets/feo_demos/torso_twist.jpg',
+      videoAsset: 'assets/feo_demos/torso_twist.mp4',
+    );
+  }
+
+  if (_containsAny(n, ['mountain climber', 'mountain climbers', 'escalador', 'escaladores'])) {
+    return const FeoExerciseDemoInfo(
+      kind: FeoExerciseDemoKind.mountainClimber,
+      titleEs: 'Escaladores',
+      cue: 'En plancha, llevá las rodillas al pecho en alternancia',
+      poseAsset: 'assets/feo_demos/mountain_climber.jpg',
+      videoAsset: 'assets/feo_demos/mountain_climber.mp4',
+    );
+  }
+
+  if (_containsAny(n, ['burpee', 'burpees'])) {
+    return const FeoExerciseDemoInfo(
+      kind: FeoExerciseDemoKind.burpee,
+      titleEs: 'Burpees',
+      cue: 'Agachate, plancha, pecho al piso y saltá arriba',
+      poseAsset: 'assets/feo_demos/burpee.jpg',
+      videoAsset: 'assets/feo_demos/burpee.mp4',
     );
   }
 
@@ -535,6 +1029,73 @@ FeoExerciseDemoInfo? _match(String raw) {
       titleEs: 'Fondos / tríceps',
       cue: 'Codos cerca del cuerpo, bajá y extendé sin bloquear de golpe',
       poseAsset: 'assets/feo_demos/triceps_dip.jpg',
+      videoAsset: 'assets/feo_demos/triceps_dip.mp4',
+    );
+  }
+
+  if (_containsAny(n, ['russian twist', 'russian twists', 'giro ruso', 'giros rusos'])) {
+    return const FeoExerciseDemoInfo(
+      kind: FeoExerciseDemoKind.russianTwist,
+      titleEs: 'Giro ruso',
+      cue: 'Torso inclinado, girá de lado a lado sin redondear la espalda',
+      poseAsset: 'assets/feo_demos/russian_twist.jpg',
+      videoAsset: 'assets/feo_demos/russian_twist.mp4',
+    );
+  }
+
+  if (_containsAny(n, ['side plank', 'plancha lateral', 'plancha de lado'])) {
+    return const FeoExerciseDemoInfo(
+      kind: FeoExerciseDemoKind.sidePlank,
+      titleEs: 'Plancha lateral',
+      cue: 'Cuerpo en línea, cadera arriba, no dejes caer el tronco',
+      poseAsset: 'assets/feo_demos/side_plank.jpg',
+      videoAsset: 'assets/feo_demos/side_plank.mp4',
+    );
+  }
+
+  if (_containsAny(n, [
+    'ab wheel', 'ab wheel rollout', 'rueda abdominal', 'rollout',
+    'rueda de abdominales',
+  ])) {
+    return const FeoExerciseDemoInfo(
+      kind: FeoExerciseDemoKind.abWheelRollout,
+      titleEs: 'Rueda abdominal',
+      cue: 'Rodá hacia adelante con control y volvé sin arquear la lumbar',
+      poseAsset: 'assets/feo_demos/ab_wheel_rollout.jpg',
+      videoAsset: 'assets/feo_demos/ab_wheel_rollout.mp4',
+    );
+  }
+
+  if (_containsAny(n, [
+    'hanging leg raise', 'hanging leg raises', 'elevacion de piernas colgado',
+    'elevación de piernas colgado', 'elevaciones de piernas en barra',
+  ])) {
+    return const FeoExerciseDemoInfo(
+      kind: FeoExerciseDemoKind.hangingLegRaise,
+      titleEs: 'Elevación de piernas colgado',
+      cue: 'Subí las piernas con el abdomen, sin balancear el cuerpo',
+      poseAsset: 'assets/feo_demos/hanging_leg_raise.jpg',
+      videoAsset: 'assets/feo_demos/hanging_leg_raise.mp4',
+    );
+  }
+
+  if (_containsAny(n, ['dead bug', 'deadbug', 'bicho muerto'])) {
+    return const FeoExerciseDemoInfo(
+      kind: FeoExerciseDemoKind.deadBug,
+      titleEs: 'Dead bug',
+      cue: 'Espalda pegada al piso, extendé brazo y pierna opuestos',
+      poseAsset: 'assets/feo_demos/dead_bug.jpg',
+      videoAsset: 'assets/feo_demos/dead_bug.mp4',
+    );
+  }
+
+  if (_containsAny(n, ['bird dog', 'bird-dog', 'perro de caza', 'cuadrupedia'])) {
+    return const FeoExerciseDemoInfo(
+      kind: FeoExerciseDemoKind.birdDog,
+      titleEs: 'Bird dog',
+      cue: 'En cuatro apoyos, extendé brazo y pierna opuestos sin girar la cadera',
+      poseAsset: 'assets/feo_demos/bird_dog.jpg',
+      videoAsset: 'assets/feo_demos/bird_dog.mp4',
     );
   }
 
@@ -547,34 +1108,7 @@ FeoExerciseDemoInfo? _match(String raw) {
       titleEs: 'Crunch',
       cue: 'Enroscá el torso, no tires del cuello',
       poseAsset: 'assets/feo_demos/crunch.jpg',
-    );
-  }
-
-  if (_containsAny(n, [
-    'standing calf raise', 'standing calf raises',
-    'elevacion de gemelos de pie', 'elevaciones de gemelos de pie',
-    'pantorrilla de pie', 'gemelos de pie',
-  ])) {
-    return const FeoExerciseDemoInfo(
-      kind: FeoExerciseDemoKind.standingCalfRaise,
-      titleEs: 'Elevacion de gemelos de pie',
-      cue: 'Subi los talones, pausa arriba y baja controlado sin doblar la rodilla',
-      poseAsset: 'assets/feo_demos/standing_calf_raise.jpg',
-      videoAsset: 'assets/feo_demos/standing_calf_raise.mp4',
-    );
-  }
-
-  if (_containsAny(n, [
-        'bodyweight squat', 'air squat', 'goblet squat', 'barbell squat',
-        'front squat', 'sentadilla', 'squat',
-      ]) &&
-      !_containsAny(n, ['split squat', 'hack squat', 'bulgarian'])) {
-    return const FeoExerciseDemoInfo(
-      kind: FeoExerciseDemoKind.squat,
-      titleEs: 'Sentadilla',
-      cue: 'Cadera atrás, pecho alto, subí empujando el piso',
-      poseAsset: 'assets/feo_demos/squat.jpg',
-      videoAsset: 'assets/feo_demos/squat.mp4',
+      videoAsset: 'assets/feo_demos/crunch.mp4',
     );
   }
 

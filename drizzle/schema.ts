@@ -146,14 +146,18 @@ export const nutritionPlans = mysqlTable("nutrition_plans", {
 export type NutritionPlan = typeof nutritionPlans.$inferSelect;
 export type InsertNutritionPlan = typeof nutritionPlans.$inferInsert;
 
-// --- FASE 4: MISIONES DIARIAS Y COFRES ---
+// --- FASE 4: MISIONES DIARIAS, VILLANOS Y EVIDENCIA ---
 
 export const dailyQuests = mysqlTable("daily_quests", {
   id: int("id").autoincrement().primaryKey(),
   userId: int("userId").notNull(),
-  date: timestamp("date").defaultNow().notNull(), // Fecha de la misión
-  questType: varchar("questType", { length: 50 }).notNull(), // ej: 'series', 'xp', 'workout'
-  targetValue: int("targetValue").notNull(), // ej: 10 (series) o 100 (xp)
+  date: timestamp("date").defaultNow().notNull(),
+  questType: varchar("questType", { length: 50 }).notNull(),
+  /** Título / descripción legible (coach PT) */
+  description: text("description"),
+  /** JSON: title, coachNote, villainId, requiresCamera, notifyHours, proof… */
+  payload: text("payload"),
+  targetValue: int("targetValue").notNull(),
   currentValue: int("currentValue").default(0).notNull(),
   rewardCoins: int("rewardCoins").default(10).notNull(),
   isCompleted: int("isCompleted").default(0).notNull(),

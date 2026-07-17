@@ -1,8 +1,11 @@
 import '../theme/app_theme.dart';
+import '../form_check/form_check_models.dart';
+import 'form_check_screen.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import '../onboarding/coach_tour_keys.dart';
 import '../services/api_service.dart';
 import '../services/feo_exercise_catalog.dart';
 import '../widgets/plan_wizard.dart';
@@ -225,6 +228,217 @@ class _WorkoutTabState extends State<WorkoutTab> {
     );
   }
 
+  Future<void> _replaceExercise(int exerciseIndex, {String? preferredName}) async {
+    final dayNumber = _selectedDayIndex + 1;
+    setState(() => _isLoading = true);
+    final result = await ApiService.replaceExercise(
+      dayNumber: dayNumber,
+      exerciseIndex: exerciseIndex,
+      preferredName: preferredName,
+    );
+    if (!mounted) return;
+
+    if (result != null && result['success'] == true) {
+      final content = result['generatedContent'];
+      final newEx = result['exercise'] is Map
+          ? Map<String, dynamic>.from(result['exercise'] as Map)
+          : null;
+      setState(() {
+        if (content is Map) {
+          _generatedContent = Map<String, dynamic>.from(content);
+        } else if (_generatedContent != null && newEx != null) {
+          final days = _generatedContent!['days'] as List<dynamic>?;
+          if (days != null &&
+              _selectedDayIndex < days.length &&
+              days[_selectedDayIndex] is Map) {
+            final day = Map<String, dynamic>.from(days[_selectedDayIndex] as Map);
+            final exercises = List<dynamic>.from(
+              (day['exercises'] as List<dynamic>?) ?? [],
+            );
+            if (exerciseIndex < exercises.length) {
+              exercises[exerciseIndex] = newEx;
+              day['exercises'] = exercises;
+              days[_selectedDayIndex] = day;
+              _generatedContent!['days'] = days;
+            }
+          }
+        }
+        _expandedExercises.clear();
+        if (newEx != null) {
+          final label = (newEx['nameEs'] ?? newEx['name'] ?? '').toString();
+          if (label.isNotEmpty) {
+            _expandedExercises.add(label);
+            _ensureExerciseMedia(newEx);
+          }
+        }
+        _isLoading = false;
+      });
+      final prev = (result['previousName'] ?? '').toString();
+      final next = (newEx?['nameEs'] ?? newEx?['name'] ?? 'nuevo').toString();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            prev.isEmpty ? 'Ejercicio actualizado: $next' : 'Cambiado: $prev → $next',
+          ),
+          backgroundColor: AppColors.primary.withOpacity(0.9),
+        ),
+      );
+    } else {
+      setState(() => _isLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No se pudo cambiar el ejercicio.')),
+      );
+    }
+  }
+
+  Future<void> _showReplaceExerciseSheet(int exerciseIndex, String currentName) async {
+    final dayNumber = _selectedDayIndex + 1;
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.cardSolid,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return FutureBuilder<Map<String, dynamic>?>(
+          future: ApiService.listExerciseReplacements(
+            dayNumber: dayNumber,
+            exerciseIndex: exerciseIndex,
+          ),
+          builder: (context, snap) {
+            final options = (snap.data?['options'] as List<dynamic>?) ?? [];
+            return SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[700],
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Cambiar ejercicio',
+                      style: GoogleFonts.rajdhani(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Actual: $currentName',
+                      style: GoogleFonts.inter(fontSize: 13, color: Colors.grey[400]),
+                    ),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.pop(ctx);
+                          _replaceExercise(exerciseIndex);
+                        },
+                        icon: const Icon(LucideIcons.refreshCw, size: 16, color: Colors.black),
+                        label: Text(
+                          'Elegir otro automático',
+                          style: GoogleFonts.inter(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'O elegí del catálogo (mismo grupo):',
+                      style: GoogleFonts.inter(fontSize: 12, color: Colors.grey[500]),
+                    ),
+                    const SizedBox(height: 8),
+                    if (snap.connectionState == ConnectionState.waiting)
+                      const Padding(
+                        padding: EdgeInsets.all(24),
+                        child: Center(
+                          child: CircularProgressIndicator(color: AppColors.primary),
+                        ),
+                      )
+                    else if (options.isEmpty)
+                      Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Text(
+                          'No hay alternativas disponibles.',
+                          style: GoogleFonts.inter(color: Colors.grey[500]),
+                        ),
+                      )
+                    else
+                      ConstrainedBox(
+                        constraints: BoxConstraints(
+                          maxHeight: MediaQuery.of(context).size.height * 0.4,
+                        ),
+                        child: ListView.separated(
+                          shrinkWrap: true,
+                          itemCount: options.length,
+                          separatorBuilder: (_, __) => Divider(color: Colors.grey[850], height: 1),
+                          itemBuilder: (_, i) {
+                            final opt = options[i] is Map
+                                ? Map<String, dynamic>.from(options[i] as Map)
+                                : <String, dynamic>{};
+                            final labelEs =
+                                (opt['nameEs'] ?? opt['name'] ?? 'Ejercicio').toString();
+                            final labelEn = (opt['name'] ?? '').toString();
+                            return ListTile(
+                              contentPadding: EdgeInsets.zero,
+                              title: Text(
+                                labelEs,
+                                style: GoogleFonts.inter(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              subtitle: labelEn.isNotEmpty && labelEn != labelEs
+                                  ? Text(
+                                      labelEn,
+                                      style: GoogleFonts.inter(
+                                        fontSize: 12,
+                                        color: Colors.grey[500],
+                                      ),
+                                    )
+                                  : null,
+                              trailing: const Icon(
+                                LucideIcons.chevronRight,
+                                color: AppColors.primary,
+                                size: 18,
+                              ),
+                              onTap: () {
+                                Navigator.pop(ctx);
+                                _replaceExercise(exerciseIndex, preferredName: labelEn);
+                              },
+                            );
+                          },
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   Future<void> _showAutoregulateDialog() async {
     if (_planData == null || _planData!['id'] == null) return;
     
@@ -305,7 +519,9 @@ class _WorkoutTabState extends State<WorkoutTab> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Header
-            Row(
+            KeyedSubtree(
+              key: CoachTourKeys.workoutHeader,
+              child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Expanded(
@@ -354,6 +570,7 @@ class _WorkoutTabState extends State<WorkoutTab> {
                     );
                   }),
               ],
+            ),
             ),
             const SizedBox(height: 16),
 
@@ -536,6 +753,7 @@ class _WorkoutTabState extends State<WorkoutTab> {
         nameEn: ex['nameEn']?.toString(),
         nameEs: ex['nameEs']?.toString(),
       );
+      final formCheck = resolveFormCheckDefinition(name);
 
       return GestureDetector(
         onTap: () => _toggleExpanded(name, ex),
@@ -668,6 +886,47 @@ class _WorkoutTabState extends State<WorkoutTab> {
                           style: GoogleFonts.rajdhani(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey[600], letterSpacing: 0.8),
                         ),
                         const SizedBox(height: 8),
+                      ],
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton.icon(
+                          onPressed: () => _showReplaceExerciseSheet(idx, name),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: AppColors.primary,
+                            side: BorderSide(color: AppColors.primary.withOpacity(0.7)),
+                            padding: const EdgeInsets.symmetric(vertical: 13),
+                          ),
+                          icon: const Icon(LucideIcons.refreshCw, size: 18),
+                          label: const Text(
+                            'CAMBIAR ESTE EJERCICIO',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ),
+                      if (formCheck != null) ...[
+                        const SizedBox(height: 12),
+                        SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton.icon(
+                            onPressed: () => Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => FormCheckScreen(exerciseName: name),
+                              ),
+                            ),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: AppColors.primary,
+                              side: const BorderSide(color: AppColors.primary),
+                              padding: const EdgeInsets.symmetric(vertical: 13),
+                            ),
+                            icon: const Icon(Icons.accessibility_new),
+                            label: const Text(
+                              'REVISAR MI TÉCNICA',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
                       ],
                       ClipRRect(
                         borderRadius: BorderRadius.circular(16),

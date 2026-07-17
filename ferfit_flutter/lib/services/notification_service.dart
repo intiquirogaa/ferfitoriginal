@@ -87,6 +87,41 @@ class NotificationService {
     await _plugin.cancel(id);
   }
 
+  /// Programa avisos de desafíos del coach (misiones / villanos).
+  /// [items] con {id, title, body, hour}.
+  Future<void> scheduleChallengeNotifications(
+    List<Map<String, dynamic>> items,
+  ) async {
+    if (!_ready || kIsWeb) return;
+    // Cancelar rango de IDs de desafíos previos (7000–7999)
+    for (var i = 7000; i < 8000; i++) {
+      await _plugin.cancel(i);
+    }
+    for (final item in items) {
+      final id = (item['id'] is num) ? (item['id'] as num).toInt() : 0;
+      final hour = (item['hour'] is num) ? (item['hour'] as num).toInt() : -1;
+      final title = item['title']?.toString() ?? 'Desafío FerFit';
+      final body = item['body']?.toString() ?? '';
+      if (id <= 0 || hour < 0 || hour > 23) continue;
+      await scheduleNextAtHour(
+        id: id,
+        hour: hour,
+        minute: 0,
+        title: title,
+        body: body,
+      );
+    }
+  }
+
+  Future<void> showNow({
+    required int id,
+    required String title,
+    required String body,
+  }) async {
+    if (!_ready || kIsWeb) return;
+    await _plugin.show(id, title, body, _details(), payload: 'challenge');
+  }
+
   Future<void> scheduleAfter({
     required int id,
     required Duration delay,

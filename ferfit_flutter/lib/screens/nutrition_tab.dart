@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:fl_chart/fl_chart.dart';
+import '../onboarding/coach_tour_keys.dart';
 import '../services/api_service.dart';
 import '../widgets/nutrition_wizard.dart';
 import '../widgets/glass_card.dart';
@@ -124,18 +125,26 @@ class _NutritionTabState extends State<NutritionTab> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(
-              'Nutrition',
-              style: GoogleFonts.rajdhani(
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
+            KeyedSubtree(
+              key: CoachTourKeys.nutritionHeader,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Nutrición',
+                    style: GoogleFonts.rajdhani(
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Tu plan de alimentación diario',
+                    style: GoogleFonts.inter(fontSize: 14, color: Colors.grey[400]),
+                  ),
+                ],
               ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'Tu plan de alimentación diario',
-              style: GoogleFonts.inter(fontSize: 14, color: Colors.grey[400]),
             ),
             if (_loadError != null) ...[
               const SizedBox(height: 12),
@@ -146,44 +155,50 @@ class _NutritionTabState extends State<NutritionTab> {
             Row(
               children: [
                 Expanded(
-                  child: GestureDetector(
-                    onTap: () => SmartLogBottomSheet.show(context, onLogged: _loadNutrition),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(colors: [Color(0xFF1E293B), Color(0xFF0F172A)]),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: const Color(0xFF39C34B).withValues(alpha: 0.4)),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(Icons.auto_awesome, color: Color(0xFF39C34B), size: 18),
-                          const SizedBox(width: 8),
-                          Text('Cargar comida IA', style: GoogleFonts.inter(fontSize: 12, color: Colors.white, fontWeight: FontWeight.w600)),
-                        ],
+                  child: KeyedSubtree(
+                    key: CoachTourKeys.logFood,
+                    child: GestureDetector(
+                      onTap: () => SmartLogBottomSheet.show(context, onLogged: _loadNutrition),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(colors: [Color(0xFF1E293B), Color(0xFF0F172A)]),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: const Color(0xFF39C34B).withValues(alpha: 0.4)),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.auto_awesome, color: Color(0xFF39C34B), size: 18),
+                            const SizedBox(width: 8),
+                            Text('Cargar comida IA', style: GoogleFonts.inter(fontSize: 12, color: Colors.white, fontWeight: FontWeight.w600)),
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: GestureDetector(
-                    onTap: () => FridgeRecipeBottomSheet.show(context),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(colors: [Color(0xFF1E293B), Color(0xFF0F172A)]),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: const Color(0xFFFFB347).withValues(alpha: 0.4)),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(Icons.kitchen, color: Color(0xFFFFB347), size: 18),
-                          const SizedBox(width: 8),
-                          Text('Receta Heladera', style: GoogleFonts.inter(fontSize: 12, color: Colors.white, fontWeight: FontWeight.w600)),
-                        ],
+                  child: KeyedSubtree(
+                    key: CoachTourKeys.fridgeRecipe,
+                    child: GestureDetector(
+                      onTap: () => FridgeRecipeBottomSheet.show(context),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(colors: [Color(0xFF1E293B), Color(0xFF0F172A)]),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: const Color(0xFFFFB347).withValues(alpha: 0.4)),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.kitchen, color: Color(0xFFFFB347), size: 18),
+                            const SizedBox(width: 8),
+                            Text('Receta heladera', style: GoogleFonts.inter(fontSize: 12, color: Colors.white, fontWeight: FontWeight.w600)),
+                          ],
+                        ),
                       ),
                     ),
                   ),

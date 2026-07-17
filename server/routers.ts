@@ -12,7 +12,17 @@ import { buildEngagement } from "./_core/engagement";
 import * as db from "./db";
 import { trainingPlans, dailyChecklists, userProgress, exerciseHistory } from "../drizzle/schema";
 import { exerciseRouter } from "./routers/exerciseRouter";
-import { progressQuest } from "./_core/quests";
+import {
+  progressQuest,
+  getOrGenerateTodayQuests,
+  claimQuestReward,
+  submitCameraProof,
+  buildChallengeNotifications,
+} from "./_core/quests";
+import {
+  listReplacementOptions,
+  replaceExerciseInActivePlan,
+} from "./_core/replaceExercise";
 
 const DAYS_FULL = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
 
@@ -486,12 +496,20 @@ export const appRouter = router({
             }
           }
           
-          // Verificar logros y misiones
+          // Verificar logros y misiones (series + villanos + sesión matutina)
           if (completionChanged) {
-             await progressQuest(ctx.user.id, "complete_series", input.completed ? 1 : -1);
-             if (checklist?.isCompleted) {
-               await progressQuest(ctx.user.id, "complete_day", 1);
-             }
+            const exerciseName = String(
+              exercise.nameEn || exercise.name || exercise.nameEs || ""
+            );
+            await progressQuest(
+              ctx.user.id,
+              "complete_series",
+              input.completed ? 1 : -1,
+              { exerciseName, hourLocal: new Date().getHours() }
+            );
+            if (checklist?.isCompleted) {
+              await progressQuest(ctx.user.id, "complete_day", 1);
+            }
           }
           
           const newlyUnlocked = await db.checkAndUnlockAchievements(ctx.user.id);
@@ -507,6 +525,47 @@ export const appRouter = router({
           throw error;
         }
       }),
+
+    /** Lista alternativas del catálogo para un ejercicio del plan activo. */
+    listExerciseReplacements: protectedProcedure
+      .input(z.object({
+        dayNumber: z.number().min(1),
+        exerciseIndex: z.number().min(0),
+      }))
+      .query(async ({ ctx, input }) => {
+        if (!ctx.user) throw new Error("Not authenticated");
+        return listReplacementOptions({
+          userId: ctx.user.id,
+          dayNumber: input.dayNumber,
+          exerciseIndex: input.exerciseIndex,
+        });
+      }),
+
+    /**
+     * Reemplaza un solo ejercicio del plan activo (mismo grupo muscular del catálogo).
+     * Conserva sets/reps; resetea series marcadas de ese ejercicio.
+     */
+    replaceExercise: protectedProcedure
+      .input(z.object({
+        dayNumber: z.number().min(1),
+        exerciseIndex: z.number().min(0),
+        preferredName: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        if (!ctx.user) throw new Error("Not authenticated");
+        try {
+          return await replaceExerciseInActivePlan({
+            userId: ctx.user.id,
+            dayNumber: input.dayNumber,
+            exerciseIndex: input.exerciseIndex,
+            preferredName: input.preferredName,
+          });
+        } catch (error) {
+          console.error("[replaceExercise] Error:", error);
+          throw error;
+        }
+      }),
+
     getExerciseProgress: protectedProcedure
       .query(async ({ ctx }) => {
         if (!ctx.user) throw new Error("Not authenticated");
@@ -901,13 +960,57 @@ Personalizá los consejos según el nivel y comportamiento real del usuario.`;
   gamification: router({
     getDailyQuests: protectedProcedure.query(async ({ ctx }) => {
       if (!ctx.user) throw new Error("Not authenticated");
-      const database = await getDb();
-      // Dummy logic for FASE 4 (Missions)
-      return [
-        { id: 1, type: 'series', title: 'Completar 10 series', target: 10, current: 4, coins: 20, done: false },
-        { id: 2, type: 'workout', title: 'Entrenar hoy', target: 1, current: 0, coins: 50, done: false },
-      ];
+      const quests = await getOrGenerateTodayQuests(ctx.user.id);
+      const notifications = buildChallengeNotifications(quests);
+      return { quests, notifications };
     }),
+    claimQuest: protectedProcedure
+      .input(z.object({ questId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        if (!ctx.user) throw new Error("Not authenticated");
+        return claimQuestReward(ctx.user.id, input.questId);
+      }),
+    submitCameraProof: protectedProcedure
+      .input(
+        z.object({
+          questId: z.number(),
+          durationSec: z.number().optional(),
+          note: z.string().max(200).optional(),
+          clientVerified: z.boolean().optional(),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        if (!ctx.user) throw new Error("Not authenticated");
+        return submitCameraProof(ctx.user.id, input.questId, {
+          durationSec: input.durationSec,
+          note: input.note,
+          clientVerified: input.clientVerified,
+        });
+      }),
+    gradeBattle: protectedProcedure
+      .input(
+        z.object({
+          questId: z.number(),
+          villainId: z.string(),
+          deviceReps: z.number().optional(),
+          durationSec: z.number().optional(),
+          framesBase64: z.array(z.string()).max(6).optional(),
+          note: z.string().max(200).optional(),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        if (!ctx.user) throw new Error("Not authenticated");
+        const { gradeBattleChallenge } = await import("./_core/battleGrade");
+        return gradeBattleChallenge({
+          userId: ctx.user.id,
+          questId: input.questId,
+          villainId: input.villainId,
+          deviceReps: input.deviceReps,
+          durationSec: input.durationSec,
+          framesBase64: input.framesBase64,
+          note: input.note,
+        });
+      }),
     getLeagueLeaderboard: protectedProcedure.query(async ({ ctx }) => {
       if (!ctx.user) throw new Error("Not authenticated");
       return {
@@ -930,8 +1033,8 @@ Personalizá los consejos según el nivel y comportamiento real del usuario.`;
         const name = ctx.user.name?.split(" ")[0] || "campeón";
         const today = new Date();
         const dayName = ["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"][today.getDay()];
-        const systemPrompt = `Sos Feo, un perro bulldog francés que hace de entrenador personal. Tu personalidad: exigente, apasionado, gracioso y cariñoso pero directo. Hablás en español rioplatense. Usás emojis de fuego 🔥 y mancuernas 💪 ocasionalmente. SIEMPRE respondés en UNA SOLA oración corta (menos de 120 caracteres).`;
-        const userPrompt = `Hoy es ${dayName}. El usuario se llama ${name}, está en el Nivel ${level} y tiene una racha de ${streak} días de entrenamiento. Generá un mensaje motivacional breve para que entrene hoy. Una sola oración, máximo 120 caracteres.`;
+        const systemPrompt = `Sos Feo, entrenador personal de FerFit. Tono profesional, motivador y claro (español rioplatense sin groserías). UNA sola oración, máximo 120 caracteres.`;
+        const userPrompt = `Hoy es ${dayName}. Cliente: ${name}, nivel ${level}, racha ${streak} días. Mensaje breve para que complete su sesión con buena técnica.`;
         const result = await invokeLLM({
           messages: [
             { role: "system", content: systemPrompt },
@@ -991,12 +1094,12 @@ Personalizá los consejos según el nivel y comportamiento real del usuario.`;
             }
           } catch {}
 
-          const systemPrompt = `Sos Feo, el perro bulldog francés entrenador personal de la app Ferfit. Tu personalidad:
-- Exigente, apasionado y muy gracioso. No te andás con vueltas.
-- Hablás en español rioplatense ("vos", "dale", "che", "boludo" con cariño).
-- Amás el fitness y odiás las excusas. Pero en el fondo sos muy cariñoso.
-- Usás emojis de fuego 🔥 mancuernas 💪 y perro 🐾 ocasionalmente.
-- Respondés de forma CORTA (2-4 oraciones máximo). No hacés listas largas.
+          const systemPrompt = `Sos Feo, el entrenador personal de FerFit (mascota rayo verde). Tono profesional, claro y motivador — como un PT certificado, no un meme.
+- Español rioplatense correcto ("vos", "dale") sin groserías ni infantilizar al cliente.
+- Priorizá técnica, progresión, recuperación y prevención de lesiones.
+- Mensajes concretos: qué hacer, por qué, y un ajuste si hace falta.
+- Podés ser cálido y directo, pero siempre respetuoso.
+- Emojis con moderación (máximo 1–2). Respondé en 2–4 oraciones.
 
 REGLAS DE SEGURIDAD EXTREMA (CRÍTICO):
 - NUNCA recomiendes ejercicios peligrosos, cargas extremas o ignorar el dolor.
@@ -1028,14 +1131,18 @@ Si te preguntan algo que no sea de fitness/nutrición, deciles que eso no es tu 
             maxTokens: 300,
           });
 
-          const reply = (result as any).choices?.[0]?.message?.content || "¡Dale, seguí entrenando! 🔥";
+          const reply = (result as any).choices?.[0]?.message?.content
+            || "Estoy con vos. Decime cómo te sentís hoy y ajustamos la sesión.";
           
           await progressQuest(ctx.user.id, "talk_to_feo", 1);
           
           return { reply: String(reply).trim() };
         } catch (e) {
           console.error("[chatWithFeo] Error:", e);
-          return { reply: "Uy, tuve un problema técnico. Pero vos seguí entrenando igual, ¿eh? 💪" };
+          return {
+            reply:
+              "Tuve un fallo técnico. Mientras tanto: priorizá técnica limpia y no fuerces si hay dolor agudo.",
+          };
         }
       }),
   }),

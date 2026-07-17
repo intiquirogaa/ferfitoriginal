@@ -1,6 +1,7 @@
 export interface Exercise {
   name: string;
   nameEn?: string;
+  nameEs?: string;
   muscleGroup?: string;
   muscleGroups?: string[];
   sets: number | string;

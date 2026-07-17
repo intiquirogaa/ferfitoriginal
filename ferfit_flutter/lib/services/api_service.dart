@@ -10,10 +10,9 @@ class ApiService {
   static String get baseUrl {
     const configured = String.fromEnvironment('FERFIT_API_URL');
     if (configured.isNotEmpty) return configured;
-    
-    // Si estás corriendo en el celular, localhost no va a encontrar la PC.
-    // Usamos la IP de la computadora en la red local.
-    return 'http://192.168.0.144:3000/api/mobile';
+
+    // Servidor remoto FerFit (mobile API bajo /api/mobile)
+    return 'http://168.181.187.209:3000/api/mobile';
   }
 
   static String get baseHost {
@@ -305,9 +304,112 @@ class ApiService {
   static Future<Map<String, dynamic>?> getTodayQuests() async {
     try {
       final res = await http.get(Uri.parse('$baseUrl/quests/today'), headers: await _headers());
-      if (res.statusCode == 200) return jsonDecode(res.body);
+      if (res.statusCode == 200) {
+        final body = jsonDecode(res.body);
+        if (body is Map<String, dynamic>) return body;
+      }
       return null;
     } catch (e) { return null; }
+  }
+
+  /// Reclama monedas de una misión completada.
+  static Future<Map<String, dynamic>?> claimQuest(int questId) async {
+    try {
+      final res = await http.post(
+        Uri.parse('$baseUrl/quests/claim'),
+        headers: await _headers(),
+        body: jsonEncode({'questId': questId}),
+      );
+      if (res.statusCode == 200) return jsonDecode(res.body) as Map<String, dynamic>;
+      try {
+        return jsonDecode(res.body) as Map<String, dynamic>;
+      } catch (_) {
+        return null;
+      }
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// Evidencia de cámara para desafíos que lo requieren.
+  static Future<Map<String, dynamic>?> submitQuestProof({
+    required int questId,
+    int durationSec = 0,
+    String? note,
+    bool clientVerified = true,
+  }) async {
+    try {
+      final res = await http.post(
+        Uri.parse('$baseUrl/quests/proof'),
+        headers: await _headers(),
+        body: jsonEncode({
+          'questId': questId,
+          'durationSec': durationSec,
+          'note': note ?? 'camera_clip',
+          'clientVerified': clientVerified,
+        }),
+      );
+      if (res.statusCode == 200) return jsonDecode(res.body) as Map<String, dynamic>;
+      try {
+        return jsonDecode(res.body) as Map<String, dynamic>;
+      } catch (_) {
+        return null;
+      }
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// Combate vs villano: calificación IA de frames + reps del dispositivo.
+  static Future<Map<String, dynamic>?> gradeBattleChallenge({
+    required int questId,
+    required String villainId,
+    required int deviceReps,
+    int durationSec = 0,
+    List<String> framesBase64 = const [],
+    String? note,
+  }) async {
+    try {
+      final res = await http
+          .post(
+            Uri.parse('$baseUrl/quests/battle/grade'),
+            headers: await _headers(),
+            body: jsonEncode({
+              'questId': questId,
+              'villainId': villainId,
+              'deviceReps': deviceReps,
+              'durationSec': durationSec,
+              'framesBase64': framesBase64,
+              'note': note ?? 'battle_challenge',
+            }),
+          )
+          .timeout(const Duration(seconds: 90));
+      if (res.statusCode == 200) {
+        return jsonDecode(res.body) as Map<String, dynamic>;
+      }
+      try {
+        return jsonDecode(res.body) as Map<String, dynamic>;
+      } catch (_) {
+        return null;
+      }
+    } catch (e) {
+      return null;
+    }
+  }
+
+  static Future<Map<String, dynamic>?> getBattleBrief(String villainId) async {
+    try {
+      final res = await http.get(
+        Uri.parse('$baseUrl/quests/battle/$villainId'),
+        headers: await _headers(),
+      );
+      if (res.statusCode == 200) {
+        return jsonDecode(res.body) as Map<String, dynamic>;
+      }
+      return null;
+    } catch (_) {
+      return null;
+    }
   }
 
   static Future<Map<String, dynamic>?> autoregulateWorkout(int planId, int dayIndex, String howUserFeels) async {
@@ -322,11 +424,68 @@ class ApiService {
     } catch (e) { return null; }
   }
 
+  /// Alternativas del catálogo para un ejercicio del plan activo.
+  /// [dayNumber] es 1-based (igual que completeSeries).
+  static Future<Map<String, dynamic>?> listExerciseReplacements({
+    required int dayNumber,
+    required int exerciseIndex,
+  }) async {
+    try {
+      final uri = Uri.parse(
+        '$baseUrl/training/replace-options?dayNumber=$dayNumber&exerciseIndex=$exerciseIndex',
+      );
+      final res = await http.get(uri, headers: await _headers());
+      if (res.statusCode == 200) {
+        return jsonDecode(res.body) as Map<String, dynamic>;
+      }
+      return null;
+    } catch (e) {
+      print('listExerciseReplacements error: $e');
+      return null;
+    }
+  }
+
+  /// Reemplaza un ejercicio puntual sin regenerar el plan.
+  static Future<Map<String, dynamic>?> replaceExercise({
+    required int dayNumber,
+    required int exerciseIndex,
+    String? preferredName,
+  }) async {
+    try {
+      final res = await http.post(
+        Uri.parse('$baseUrl/training/replace-exercise'),
+        headers: await _headers(),
+        body: jsonEncode({
+          'dayNumber': dayNumber,
+          'exerciseIndex': exerciseIndex,
+          if (preferredName != null && preferredName.isNotEmpty)
+            'preferredName': preferredName,
+        }),
+      ).timeout(const Duration(seconds: 45));
+      if (res.statusCode == 200) {
+        return jsonDecode(res.body) as Map<String, dynamic>;
+      }
+      return null;
+    } catch (e) {
+      print('replaceExercise error: $e');
+      return null;
+    }
+  }
+
   // --- FASE 4 & 5: MISSIONS AND LEAGUES ---
   static Future<List<dynamic>?> getDailyQuests() async {
     try {
       final res = await http.get(Uri.parse('$baseUrl/gamification/quests'), headers: await _headers());
-      if (res.statusCode == 200) return jsonDecode(res.body);
+      if (res.statusCode == 200) {
+        final body = jsonDecode(res.body);
+        if (body is Map && body['quests'] is List) return body['quests'] as List<dynamic>;
+        if (body is List) return body;
+      }
+      // Fallback al endpoint unificado
+      final today = await getTodayQuests();
+      if (today != null && today['quests'] is List) {
+        return today['quests'] as List<dynamic>;
+      }
       return null;
     } catch (e) { return null; }
   }

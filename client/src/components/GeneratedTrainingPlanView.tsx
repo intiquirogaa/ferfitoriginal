@@ -5,7 +5,8 @@ import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import {
   Download, Dumbbell, Apple, ChevronLeft, ChevronRight, Clock,
-  Flame as FlameIcon, Loader2, Check, Sparkles, Calendar, Play, Pause, SkipForward
+  Flame as FlameIcon, Loader2, Check, Sparkles, Calendar, Play, Pause, SkipForward,
+  RefreshCw
 } from "lucide-react";
 import { toast } from "sonner";
 import type { GeneratedTrainingAndNutritionPlan } from "@/types";
@@ -130,7 +131,32 @@ export default function GeneratedTrainingPlanView({ plan }: Props) {
     }
   });
 
+  const replaceExercise = trpc.training.replaceExercise.useMutation({
+    onSuccess: (data) => {
+      utils.training.getActivePlan.invalidate();
+      const label =
+        (data.exercise as any)?.nameEs ||
+        (data.exercise as any)?.name ||
+        "nuevo ejercicio";
+      toast.success("Ejercicio cambiado", {
+        description: `${data.previousName} → ${label}`,
+      });
+    },
+    onError: (err) => {
+      toast.error("No se pudo cambiar el ejercicio", { description: err.message });
+    },
+  });
+
   if (!currentDay) return null;
+
+  const handleReplaceExercise = (preferredName?: string) => {
+    if (!activeExercise) return;
+    replaceExercise.mutate({
+      dayNumber: currentDayIndex + 1,
+      exerciseIndex: activeExerciseIndex,
+      preferredName,
+    });
+  };
 
   const handleSaveSeries = async (seriesIdx: number, completedState: boolean, customWeight?: number, customReps?: number) => {
     if (!activeExercise) return;
@@ -437,6 +463,42 @@ export default function GeneratedTrainingPlanView({ plan }: Props) {
 
         {/* COLUMN 3: DETAILS & VISUALS (3 cols) */}
         <div className="lg:col-span-3 space-y-6">
+
+          {activeExercise && (
+            <Card className="p-4 glass-panel text-left space-y-3">
+              <div>
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                  Ejercicio activo
+                </p>
+                <h3 className="font-display text-lg font-bold text-foreground mt-1">
+                  {exerciseTranslations[activeExercise.name] ??
+                    activeExercise.nameEs ??
+                    activeExercise.name}
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {activeExercise.sets} × {activeExercise.reps}
+                  {activeExercise.muscleGroup ? ` · ${activeExercise.muscleGroup}` : ""}
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                className="w-full border-accent/40 text-accent hover:bg-accent/10 gap-2"
+                disabled={replaceExercise.isPending}
+                onClick={() => handleReplaceExercise()}
+              >
+                {replaceExercise.isPending ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <RefreshCw className="w-4 h-4" />
+                )}
+                Cambiar este ejercicio
+              </Button>
+              <p className="text-[11px] text-muted-foreground leading-snug">
+                Busca otro del mismo grupo muscular en el catálogo. No regenera el plan completo.
+                Las series marcadas de este ejercicio se reinician.
+              </p>
+            </Card>
+          )}
           
           {/* GIF PREVIEW CARD */}
           <Card className="p-4 glass-panel flex flex-col items-center">

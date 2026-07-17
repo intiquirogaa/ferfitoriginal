@@ -4,7 +4,8 @@
 > **No** es el dump completo de ExerciseDB RapidAPI (miles de nombres). Es la lista **cerrada** de ejercicios permitidos en FerFit.  
 > **Demos Feo:** `ferfit_flutter/assets/feo_demos/`  
 > **Lookup en app:** `ferfit_flutter/lib/services/feo_exercise_catalog.dart`  
-> **Última actualización:** 2026-07-08
+> **Última actualización:** 2026-07-16  
+> **Nota producto:** Fase A de misiones (coach PT, villanos, evidencia cámara) en `server/_core/quests.ts` + Flutter `quests_screen` / `challenge_proof_screen`.
 
 ---
 
@@ -13,10 +14,8 @@
 | Métrica | Cantidad |
 |--------|----------|
 | **Total ejercicios en catálogo** | **99** |
-| Con demo Feo **directa** (asset propio o dedicado) | **15** (pose JPG) |
-| Con **video** MP4 además de pose | **4** |
-| Cubiertos por **patrón compartido** (misma demo de familia) | ver por grupo |
-| **Sin demo Feo** (faltan) | ver lista “FALTAN” |
+| **Todos los grupos del catálogo (99)** | **Completos con video** (propio o familia) |
+| **CARDIO_MOBILITY** | **10/10** jpg+mp4 (2026-07-16) |
 
 ### Assets de Feo existentes
 
@@ -93,108 +92,93 @@
 
 ---
 
-## LEGS (20)
+## LEGS (20) — ✅ COMPLETO jpg+mp4 (2026-07-09)
 
-| # | Ejercicio | Demo Feo | Asset / nota |
-|---|-----------|----------|--------------|
-| 1 | Barbell Squat | 🟡 Familia | → `squat` |
-| 2 | Front Squat | 🟡 Familia | → `squat` |
-| 3 | Goblet Squat | 🟡 Familia | → `squat` |
-| 4 | Bodyweight Squat | ✅ Propio / familia | → `squat` + video |
-| 5 | Leg Press | ❌ Falta | |
-| 6 | Hack Squat | ❌ Falta | (excluido a propósito del match squat genérico) |
-| 7 | Bulgarian Split Squat | ❌ Falta | |
-| 8 | Lunges | ✅ Propio | `lunge` |
-| 9 | Walking Lunges | 🟡 Familia | → `lunge` |
-| 10 | Romanian Deadlift | 🟡 Familia | → `deadlift` |
-| 11 | Stiff-Legged Deadlift | 🟡 Familia | → `deadlift` |
-| 12 | Leg Extension | ❌ Falta | |
-| 13 | Leg Curl | ❌ Falta | |
-| 14 | Seated Leg Curl | ❌ Falta | |
-| 15 | Lying Leg Curl | ❌ Falta | |
-| 16 | Hip Thrust | ❌ Falta | |
-| 17 | Glute Bridge | ❌ Falta | |
-| 18 | Calf Raise | ❌ Falta | |
-| 19 | Seated Calf Raise | ❌ Falta | |
-| 20 | Standing Calf Raise | ❌ Falta | |
+Incluye `standing_calf_raise.mp4` (completado). Todos 1:1 con Feo (`mascot_happy` ref).
+
+| # | Ejercicio | Asset |
+|---|-----------|--------|
+| 1–20 | Barbell/Front/Goblet/Bodyweight Squat, Leg Press, Hack, Bulgarian, Lunges, Walking Lunges, RDL, SLDL, Leg Extension, Leg Curl variants, Hip Thrust, Glute Bridge, Calf variants | `barbell_squat` … `standing_calf_raise` |
 
 ---
 
-## SHOULDERS (14)
+## SHOULDERS (14) — ✅ COMPLETO jpg+mp4 (2026-07-09)
 
-| # | Ejercicio | Demo Feo | Asset / nota |
-|---|-----------|----------|--------------|
-| 1 | Overhead Press | ✅ Propio | `overhead_press` |
-| 2 | Dumbbell Shoulder Press | 🟡 Familia | → `overhead_press` |
-| 3 | Arnold Press | 🟡 Familia | → `overhead_press` |
-| 4 | Lateral Raise | ✅ Propio | `lateral_raise` |
-| 5 | Cable Lateral Raise | 🟡 Familia | → `lateral_raise` |
-| 6 | Machine Lateral Raise | 🟡 Familia | → `lateral_raise` |
-| 7 | Front Raise | ❌ Falta | |
-| 8 | Dumbbell Front Raise | ❌ Falta | |
-| 9 | Reverse Pec Deck | ❌ Falta | |
-| 10 | Face Pull | ❌ Falta | |
-| 11 | Dumbbell Rear Delt Row | ❌ Falta | |
-| 12 | Upright Row | ❌ Falta | |
-| 13 | Barbell Shrug | ❌ Falta | |
-| 14 | Dumbbell Shrug | ❌ Falta | |
+Ref: mascota Feo FerFit. Match 1:1 en catálogo.
 
----
-
-## ARMS (13)
-
-| # | Ejercicio | Demo Feo | Asset / nota |
-|---|-----------|----------|--------------|
-| 1 | Barbell Curl | 🟡 Familia | → `dumbbell_curl` |
-| 2 | Dumbbell Curl | ✅ Propio | `dumbbell_curl` + video |
-| 3 | Hammer Curl | 🟡 Familia | → `dumbbell_curl` |
-| 4 | Preacher Curl | 🟡 Familia | → `dumbbell_curl` |
-| 5 | Cable Curl | 🟡 Familia | → `dumbbell_curl` |
-| 6 | Concentration Curl | 🟡 Familia | → `dumbbell_curl` |
-| 7 | Triceps Pushdown | 🟡 Familia | → `triceps_dip` (mismo patrón extensión) |
-| 8 | Overhead Triceps Extension | 🟡 Familia | → `triceps_dip` |
-| 9 | Skullcrusher | 🟡 Familia | → `triceps_dip` |
-| 10 | Close Grip Bench Press | ❌ Falta | |
-| 11 | Triceps Dip | ✅ Propio | `triceps_dip` |
-| 12 | Bench Dip | 🟡 Familia | → `triceps_dip` |
-| 13 | Triceps Kickback | 🟡 Familia | → `triceps_dip` |
+| # | Ejercicio | Asset |
+|---|-----------|--------|
+| 1 | Overhead Press | `overhead_press` |
+| 2 | Dumbbell Shoulder Press | `dumbbell_shoulder_press` |
+| 3 | Arnold Press | `arnold_press` |
+| 4 | Lateral Raise | `lateral_raise` |
+| 5 | Cable Lateral Raise | `cable_lateral_raise` |
+| 6 | Machine Lateral Raise | `machine_lateral_raise` |
+| 7 | Front Raise | `front_raise` |
+| 8 | Dumbbell Front Raise | `dumbbell_front_raise` |
+| 9 | Reverse Pec Deck | `reverse_pec_deck` |
+| 10 | Face Pull | `face_pull` |
+| 11 | Dumbbell Rear Delt Row | `dumbbell_rear_delt_row` |
+| 12 | Upright Row | `upright_row` |
+| 13 | Barbell Shrug | `barbell_shrug` |
+| 14 | Dumbbell Shrug | `dumbbell_shrug` |
 
 ---
 
-## CORE (13)
+## ARMS (13) — ✅ COMPLETO jpg+mp4 (2026-07-16)
 
 | # | Ejercicio | Demo Feo | Asset / nota |
 |---|-----------|----------|--------------|
-| 1 | Crunch | ✅ Propio | `crunch` |
-| 2 | Reverse Crunch | 🟡 Familia | → `crunch` |
-| 3 | Bicycle Crunch | 🟡 Familia | → `crunch` |
-| 4 | Russian Twist | ❌ Falta | |
-| 5 | Plank | ✅ Propio | `plank` + video |
-| 6 | Side Plank | ❌ Falta | (excluido del match plank genérico) |
-| 7 | Ab Wheel Rollout | ❌ Falta | |
-| 8 | Hanging Leg Raise | ❌ Falta | |
-| 9 | Cable Crunch | 🟡 Familia | → `crunch` |
-| 10 | Decline Crunch | 🟡 Familia | → `crunch` |
-| 11 | Mountain Climber | ✅ Propio | `mountain_climber` |
-| 12 | Dead Bug | ❌ Falta | |
-| 13 | Bird Dog | ❌ Falta | |
+| 1 | Barbell Curl | 🟡 Familia + video | → `dumbbell_curl` |
+| 2 | Dumbbell Curl | ✅ Propio + video | `dumbbell_curl` |
+| 3 | Hammer Curl | 🟡 Familia + video | → `dumbbell_curl` |
+| 4 | Preacher Curl | 🟡 Familia + video | → `dumbbell_curl` |
+| 5 | Cable Curl | 🟡 Familia + video | → `dumbbell_curl` |
+| 6 | Concentration Curl | 🟡 Familia + video | → `dumbbell_curl` |
+| 7 | Triceps Pushdown | 🟡 Familia + video | → `triceps_dip` |
+| 8 | Overhead Triceps Extension | 🟡 Familia + video | → `triceps_dip` |
+| 9 | Skullcrusher | 🟡 Familia + video | → `triceps_dip` |
+| 10 | Close Grip Bench Press | ✅ Propio + video | `close_grip_bench_press` |
+| 11 | Triceps Dip | ✅ Propio + video | `triceps_dip` |
+| 12 | Bench Dip | 🟡 Familia + video | → `triceps_dip` |
+| 13 | Triceps Kickback | 🟡 Familia + video | → `triceps_dip` |
 
 ---
 
-## CARDIO_MOBILITY (10)
+## CORE (13) — ✅ COMPLETO jpg+mp4 (2026-07-16)
 
 | # | Ejercicio | Demo Feo | Asset / nota |
 |---|-----------|----------|--------------|
-| 1 | Burpee | ✅ Propio | `burpee` |
-| 2 | Jumping Jack | ✅ Propio | `jumping_jack` |
-| 3 | High Knees | ❌ Falta | |
-| 4 | Jump Rope | ❌ Falta | |
-| 5 | Box Jump | ❌ Falta | |
-| 6 | Kettlebell Swing | ❌ Falta | |
-| 7 | Shoulder Dislocates | ❌ Falta | |
-| 8 | Cat-Cow | ❌ Falta | |
-| 9 | Hip Rotations | ❌ Falta | |
-| 10 | Torso Twist | ❌ Falta | |
+| 1 | Crunch | ✅ Propio + video | `crunch` |
+| 2 | Reverse Crunch | 🟡 Familia + video | → `crunch` |
+| 3 | Bicycle Crunch | 🟡 Familia + video | → `crunch` |
+| 4 | Russian Twist | ✅ Propio + video | `russian_twist` |
+| 5 | Plank | ✅ Propio + video | `plank` |
+| 6 | Side Plank | ✅ Propio + video | `side_plank` |
+| 7 | Ab Wheel Rollout | ✅ Propio + video | `ab_wheel_rollout` |
+| 8 | Hanging Leg Raise | ✅ Propio + video | `hanging_leg_raise` |
+| 9 | Cable Crunch | 🟡 Familia + video | → `crunch` |
+| 10 | Decline Crunch | 🟡 Familia + video | → `crunch` |
+| 11 | Mountain Climber | ✅ Propio + video | `mountain_climber` |
+| 12 | Dead Bug | ✅ Propio + video | `dead_bug` |
+| 13 | Bird Dog | ✅ Propio + video | `bird_dog` |
+
+---
+
+## CARDIO_MOBILITY (10) — ✅ COMPLETO jpg+mp4 (2026-07-16)
+
+| # | Ejercicio | Demo Feo | Asset |
+|---|-----------|----------|-------|
+| 1 | Burpee | ✅ Propio + video | `burpee` |
+| 2 | Jumping Jack | ✅ Propio + video | `jumping_jack` |
+| 3 | High Knees | ✅ Propio + video | `high_knees` |
+| 4 | Jump Rope | ✅ Propio + video | `jump_rope` |
+| 5 | Box Jump | ✅ Propio + video | `box_jump` |
+| 6 | Kettlebell Swing | ✅ Propio + video | `kettlebell_swing` |
+| 7 | Shoulder Dislocates | ✅ Propio + video | `shoulder_dislocates` |
+| 8 | Cat-Cow | ✅ Propio + video | `cat_cow` |
+| 9 | Hip Rotations | ✅ Propio + video | `hip_rotations` |
+| 10 | Torso Twist | ✅ Propio + video | `torso_twist` |
 
 ---
 

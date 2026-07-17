@@ -19,6 +19,9 @@ dependencies:
   flutter_local_notifications: ^18.0.1
   timezone: ^0.9.4
   video_player: ^2.9.2
+  camera: ^0.12.0+2
+  camera_android: ^0.10.11
+  google_mlkit_pose_detection: ^0.15.0
   webview_flutter: ^4.14.1
   home_widget: ^0.9.3
 
@@ -39,5 +42,7 @@ flutter:
   assets:
     - assets/mascot/
     - assets/feo_demos/
+    - assets/villains/
+    - assets/battle/
 
 

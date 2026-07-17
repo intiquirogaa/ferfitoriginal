@@ -53,6 +53,7 @@
     "@trpc/react-query": "^11.6.0",
     "@trpc/server": "^11.6.0",
     "@types/cors": "^2.8.19",
+    "@xai-official/grok": "^0.2.101",
     "axios": "^1.12.2",
     "bcryptjs": "^3.0.3",
     "class-variance-authority": "^0.7.1",

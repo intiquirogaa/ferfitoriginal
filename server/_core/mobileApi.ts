@@ -469,15 +469,168 @@ mobileApiRouter.post("/store/equip-personality", requireAuth, async (req, res) =
   }
 });
 
-// 19. Misiones Diarias (Quests)
+// 19. Misiones Diarias (Quests) + desafíos / villanos / evidencia
 mobileApiRouter.get("/quests/today", requireAuth, async (req, res) => {
   try {
     const ctx = (req as any).trpcCtx;
-    const { getOrGenerateTodayQuests } = await import("./quests");
+    const {
+      getOrGenerateTodayQuests,
+      buildChallengeNotifications,
+    } = await import("./quests");
     const quests = await getOrGenerateTodayQuests(ctx.user.id);
-    return res.json({ success: true, quests });
+    const notifications = buildChallengeNotifications(quests);
+    return res.json({ success: true, quests, notifications });
   } catch (error: any) {
     return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Alias usado por pantallas Flutter antiguas
+mobileApiRouter.get("/gamification/quests", requireAuth, async (req, res) => {
+  try {
+    const ctx = (req as any).trpcCtx;
+    const {
+      getOrGenerateTodayQuests,
+      buildChallengeNotifications,
+    } = await import("./quests");
+    const quests = await getOrGenerateTodayQuests(ctx.user.id);
+    const notifications = buildChallengeNotifications(quests);
+    return res.json({ success: true, quests, notifications });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+mobileApiRouter.post("/quests/claim", requireAuth, async (req, res) => {
+  try {
+    const ctx = (req as any).trpcCtx;
+    const questId = Number(req.body?.questId);
+    if (!questId) {
+      return res.status(400).json({ success: false, error: "questId requerido" });
+    }
+    const { claimQuestReward } = await import("./quests");
+    const result = await claimQuestReward(ctx.user.id, questId);
+    return res.json({ success: true, ...result });
+  } catch (error: any) {
+    return res.status(400).json({ success: false, error: error.message });
+  }
+});
+
+mobileApiRouter.post("/quests/proof", requireAuth, async (req, res) => {
+  try {
+    const ctx = (req as any).trpcCtx;
+    const questId = Number(req.body?.questId);
+    if (!questId) {
+      return res.status(400).json({ success: false, error: "questId requerido" });
+    }
+    const { submitCameraProof } = await import("./quests");
+    const result = await submitCameraProof(ctx.user.id, questId, {
+      durationSec: Number(req.body?.durationSec || 0),
+      note: req.body?.note,
+      clientVerified: !!req.body?.clientVerified,
+    });
+    return res.json({ success: true, ...result });
+  } catch (error: any) {
+    return res.status(400).json({ success: false, error: error.message });
+  }
+});
+
+mobileApiRouter.get("/quests/villains", requireAuth, async (_req, res) => {
+  try {
+    const { VILLAINS, publicVillain } = await import("./villains");
+    return res.json({
+      success: true,
+      villains: VILLAINS.map(publicVillain),
+    });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+/** Combate animado: briefing del villano del día / por id */
+mobileApiRouter.get("/quests/battle/:villainId", requireAuth, async (req, res) => {
+  try {
+    const { getVillainById } = await import("./villains");
+    const { battleBrief } = await import("./battleGrade");
+    const villain = getVillainById(String(req.params.villainId));
+    if (!villain) {
+      return res.status(404).json({ success: false, error: "Villano no encontrado" });
+    }
+    return res.json({ success: true, ...battleBrief(villain) });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+/**
+ * Califica el video/frames del desafío de combate con IA.
+ * Body: { questId, villainId, deviceReps, durationSec, framesBase64: string[] }
+ */
+mobileApiRouter.post("/quests/battle/grade", requireAuth, async (req, res) => {
+  try {
+    const ctx = (req as any).trpcCtx;
+    const { gradeBattleChallenge } = await import("./battleGrade");
+    const result = await gradeBattleChallenge({
+      userId: ctx.user.id,
+      questId: Number(req.body?.questId || 0),
+      villainId: String(req.body?.villainId || ""),
+      framesBase64: Array.isArray(req.body?.framesBase64)
+        ? req.body.framesBase64
+        : [],
+      deviceReps: Number(req.body?.deviceReps || 0),
+      durationSec: Number(req.body?.durationSec || 0),
+      note: req.body?.note,
+    });
+    return res.json({ success: true, ...result });
+  } catch (error: any) {
+    console.error("[Mobile API] battle grade error:", error);
+    return res.status(400).json({ success: false, error: error.message });
+  }
+});
+
+// 20b. Reemplazo granular de un ejercicio (catálogo RAG)
+mobileApiRouter.get("/training/replace-options", requireAuth, async (req, res) => {
+  try {
+    const ctx = (req as any).trpcCtx;
+    const dayNumber = Number(req.query.dayNumber || req.query.day || 0);
+    const exerciseIndex = Number(req.query.exerciseIndex ?? req.query.ex ?? -1);
+    if (!dayNumber || exerciseIndex < 0) {
+      return res.status(400).json({ success: false, error: "dayNumber y exerciseIndex requeridos" });
+    }
+    const { listReplacementOptions } = await import("./replaceExercise");
+    const data = await listReplacementOptions({
+      userId: ctx.user.id,
+      dayNumber,
+      exerciseIndex,
+    });
+    return res.json({ success: true, ...data });
+  } catch (error: any) {
+    console.error("[Mobile API] replace-options error:", error);
+    return res.status(400).json({ success: false, error: error.message });
+  }
+});
+
+mobileApiRouter.post("/training/replace-exercise", requireAuth, async (req, res) => {
+  try {
+    const ctx = (req as any).trpcCtx;
+    const dayNumber = Number(req.body?.dayNumber || 0);
+    const exerciseIndex = Number(req.body?.exerciseIndex ?? -1);
+    const preferredName =
+      typeof req.body?.preferredName === "string" ? req.body.preferredName : undefined;
+    if (!dayNumber || exerciseIndex < 0) {
+      return res.status(400).json({ success: false, error: "dayNumber y exerciseIndex requeridos" });
+    }
+    const { replaceExerciseInActivePlan } = await import("./replaceExercise");
+    const result = await replaceExerciseInActivePlan({
+      userId: ctx.user.id,
+      dayNumber,
+      exerciseIndex,
+      preferredName,
+    });
+    return res.json(result);
+  } catch (error: any) {
+    console.error("[Mobile API] replace-exercise error:", error);
+    return res.status(400).json({ success: false, error: error.message });
   }
 });
 

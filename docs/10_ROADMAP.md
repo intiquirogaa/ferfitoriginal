@@ -5,14 +5,13 @@
 ---
 
 ## En progreso
-*(nada activo identificado al momento de esta auditoría — el working tree tiene cambios grandes sin commitear que corresponden a la entrada de changelog del 2026-07-04)*
+- *(ninguna feature activa de producto al 2026-07-17 — "Cambiar este ejercicio" pasó a Finalizado)*
 
 ---
 
 ## Pendiente (declarado en BITACORA.md, aún no implementado)
 
 - **Chain of Thought / múltiples pasos de inferencia**: dividir la generación de planes en pasos más pequeños (Estrategia → Selección de ejercicios → Nutrición) en vez de un único prompt masivo, para evitar sobrecarga de contexto y mejorar precisión.
-- **Regeneración granular de ejercicios**: permitir "Cambiar este ejercicio" para reemplazar un ejercicio puntual sin tener que regenerar todo el plan de 12 semanas.
 
 ## Pendiente (identificado durante esta auditoría técnica)
 
@@ -28,6 +27,7 @@
 
 ## Finalizado
 
+- **Regeneración granular de ejercicios** ("Cambiar este ejercicio"): tRPC `training.replaceExercise` + mobile `POST /training/replace-exercise`; UI web y Flutter eligen del catálogo RAG del mismo grupo muscular sin regenerar el plan (2026-07-17).
 - Autenticación completa con Clerk (web + móvil), con hash SHA-256 de tokens como fallback en backend.
 - Migración a Structured Outputs (JSON Schema estricto) para la generación de planes.
 - Catálogo RAG de ejercicios para evitar alucinaciones del LLM.
