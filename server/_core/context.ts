@@ -18,8 +18,7 @@ type LocalClaims = {
 
 async function verifyLocalToken(token: string): Promise<LocalClaims | null> {
   try {
-    const secret = process.env.JWT_SECRET || "change-me-to-a-long-random-string";
-    const decoded = jwt.verify(token, secret) as LocalClaims;
+    const decoded = jwt.verify(token, ENV.jwtSecret) as LocalClaims;
     return decoded;
   } catch (error) {
     return null;
@@ -34,9 +33,9 @@ export async function createContext(
   const authHeader = opts.req.headers.authorization;
   if (typeof authHeader === "string" && authHeader.startsWith("Bearer ")) {
     const token = authHeader.slice(7);
-    
-    // Dev bypass
-    if (token === "dev_bypass_token") {
+
+    // Dev bypass — solo disponible fuera de producción.
+    if (token === "dev_bypass_token" && !ENV.isProduction) {
       const email = "uripichipi@gmail.com";
       let dbUser = await db.getUserByEmail(email);
       if (!dbUser) {

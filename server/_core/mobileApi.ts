@@ -12,8 +12,9 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { getDb, getUserByEmail, createUser } from "../db";
 import crypto from "crypto";
+import { ENV } from "./env";
 
-const JWT_SECRET = process.env.JWT_SECRET || "change-me-to-a-long-random-string";
+const JWT_SECRET = ENV.jwtSecret;
 
 mobileApiRouter.post("/auth/sign-in", async (req, res) => {
   try {
@@ -22,7 +23,12 @@ mobileApiRouter.post("/auth/sign-in", async (req, res) => {
       return res.status(400).json({ error: "Email y contraseña son requeridos" });
     }
 
-    if (email === "uripichipi@gmail.com" && password === "FerfitPassword123!") {
+    // Credenciales de bypass solo para desarrollo; deshabilitadas en producción.
+    if (
+      !ENV.isProduction &&
+      email === "uripichipi@gmail.com" &&
+      password === "FerfitPassword123!"
+    ) {
       return res.json({
         success: true,
         token: "dev_bypass_token",
@@ -115,10 +121,8 @@ mobileApiRouter.post("/auth", async (req, res) => {
 
 async function requireAuth(req: Request, res: Response, next: any) {
   try {
-    console.log('[Mobile API] requireAuth authorization:', req.headers.authorization);
     const ctx = await getTrpcContext(req, res);
     if (!ctx.user) {
-      console.log('[Mobile API] requireAuth failed, user is null');
       return res.status(401).json({ error: "Unauthorized" });
     }
     (req as any).trpcCtx = ctx;
@@ -172,9 +176,7 @@ mobileApiRouter.get("/plan/active", requireAuth, async (req, res) => {
 // 5. Create Plan Endpoint (POST)
 mobileApiRouter.post("/plan/create", requireAuth, async (req, res) => {
   try {
-    console.log('[Mobile API] /plan/create headers:', req.headers.authorization);
     const ctx = (req as any).trpcCtx;
-    console.log('[Mobile API] /plan/create ctx.user:', ctx?.user ? { id: ctx.user.id, openId: ctx.user.openId } : null);
     const caller = createCaller(ctx);
     const plan = await caller.training.createPlan(req.body);
     return res.json({ success: true, plan });
