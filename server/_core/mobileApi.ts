@@ -14,8 +14,6 @@ import { getDb, getUserByEmail, createUser } from "../db";
 import crypto from "crypto";
 import { ENV } from "./env";
 
-const JWT_SECRET = ENV.jwtSecret;
-
 mobileApiRouter.post("/auth/sign-in", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -48,7 +46,7 @@ mobileApiRouter.post("/auth/sign-in", async (req, res) => {
 
     const token = jwt.sign(
       { id: user.id, openId: user.openId, email: user.email },
-      JWT_SECRET,
+      ENV.jwtSecret,
       { expiresIn: "30d" }
     );
 
@@ -92,7 +90,7 @@ mobileApiRouter.post("/auth/sign-up", async (req, res) => {
 
     const token = jwt.sign(
       { id: newUser.id, openId: newUser.openId, email: newUser.email },
-      JWT_SECRET,
+      ENV.jwtSecret,
       { expiresIn: "30d" }
     );
 

@@ -7,8 +7,16 @@ const INSECURE_JWT_DEFAULT = "change-me-to-a-long-random-string";
  * y contexto tRPC). En producción falla de forma dura si el secreto está
  * ausente, es el valor de ejemplo o es demasiado corto: firmar/verificar con un
  * secreto público permitiría a cualquiera forjar un token para cualquier email.
+ *
+ * Se evalúa de forma perezosa (memoizada) en el primer uso, no al cargar el
+ * módulo: en el bundle de producción dotenv puede poblar `process.env` después
+ * de la inicialización de este módulo, así que validar en el import haría que el
+ * servidor no arranque aunque el `.env` tenga el secreto correcto.
  */
+let cachedJwtSecret: string | null = null;
 function resolveJwtSecret(): string {
+  if (cachedJwtSecret !== null) return cachedJwtSecret;
+
   const secret = process.env.JWT_SECRET ?? "";
   const isProduction = process.env.NODE_ENV === "production";
   const isInsecure = !secret || secret === INSECURE_JWT_DEFAULT || secret.length < 32;
@@ -23,13 +31,16 @@ function resolveJwtSecret(): string {
       "[SECURITY] JWT_SECRET usa un valor por defecto/inseguro. Solo aceptable en desarrollo; configuralo antes de desplegar."
     );
   }
-  return secret || INSECURE_JWT_DEFAULT;
+  cachedJwtSecret = secret || INSECURE_JWT_DEFAULT;
+  return cachedJwtSecret;
 }
 
 export const ENV = {
   appId: process.env.VITE_APP_ID ?? "",
   cookieSecret: process.env.JWT_SECRET ?? "",
-  jwtSecret: resolveJwtSecret(),
+  get jwtSecret(): string {
+    return resolveJwtSecret();
+  },
   databaseUrl: process.env.DATABASE_URL ?? "",
   oAuthServerUrl: process.env.OAUTH_SERVER_URL ?? "",
   ownerOpenId: process.env.OWNER_OPEN_ID ?? "",
