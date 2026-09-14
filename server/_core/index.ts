@@ -1,92 +1,69 @@
 import "dotenv/config";
 import express from "express";
 import { createServer } from "http";
-import net from "net";
 import cors from "cors";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerStorageProxy } from "./storageProxy";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
-import { serveStatic, setupVite } from "./vite";
 import { registerMobileApi } from "./mobileApi";
 import { registerOAuthRoutes } from "./oauth";
 import { ENV } from "./env";
 
-function isPortAvailable(port: number): Promise<boolean> {
-  return new Promise(resolve => {
-    const server = net.createServer();
-    server.listen(port, '0.0.0.0', () => {
-      server.close(() => resolve(true));
-    });
-    server.on("error", () => resolve(false));
-  });
-}
-
-async function findAvailablePort(startPort: number = 3000): Promise<number> {
-  for (let port = startPort; port < startPort + 20; port++) {
-    if (await isPortAvailable(port)) {
-      return port;
-    }
+function isAllowedOrigin(origin) {
+  if (!origin) return true;
+  if (ENV.allowedOrigins.includes(origin)) return true;
+  try {
+    const host = new URL(origin).hostname;
+    return host.endsWith(".vercel.app") || host === "localhost" || host === "127.0.0.1";
+  } catch {
+    return false;
   }
-  throw new Error(`No available port found starting from ${startPort}`);
 }
 
-async function startServer() {
+export function createApp() {
   const app = express();
-  const server = createServer(app);
-  const corsOptions: cors.CorsOptions = {
+  const corsOptions = {
     origin: (origin, callback) => {
-      // Permitir solicitudes sin origen (ej. same-origin, apps móviles) o
-      // orígenes explícitamente permitidos.
-      if (!origin || ENV.allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error(`Origen no permitido por CORS: ${origin}`));
-      }
+      if (isAllowedOrigin(origin)) callback(null, true);
+      else callback(new Error("Origen no permitido por CORS: " + origin));
     },
     credentials: true,
     methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE", "OPTIONS"],
-    allowedHeaders: [
-      "Content-Type",
-      "Authorization",
-      "Cookie",
-      "X-Requested-With",
-      "Accept",
-    ],
+    allowedHeaders: ["Content-Type", "Authorization", "Cookie", "X-Requested-With", "Accept"],
   };
   app.use(cors(corsOptions));
   app.options("*", cors(corsOptions));
-  // Configure body parser with larger size limit for file uploads
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
   registerStorageProxy(app);
   registerOAuthRoutes(app);
+  app.get("/health", (_req, res) => res.status(200).json({ ok: true, service: "ferfit" }));
+  app.get("/api/mobile/health", (_req, res) => res.status(200).json({ ok: true, service: "ferfit-mobile" }));
   registerMobileApi(app);
-  // tRPC API
-  app.use(
-    "/api/trpc",
-    createExpressMiddleware({
-      router: appRouter,
-      createContext,
-    })
-  );
-  // development mode uses Vite, production mode uses static files
+  app.use("/api/trpc", createExpressMiddleware({ router: appRouter, createContext }));
+  return app;
+}
+
+const app = createApp();
+
+async function startLocalServer() {
+  const server = createServer(app);
   if (process.env.NODE_ENV === "development") {
+    const { setupVite } = await import("./vite");
     await setupVite(app, server);
   } else {
+    const { serveStatic } = await import("./vite");
     serveStatic(app);
   }
-
-  const preferredPort = parseInt(process.env.PORT || "3000");
-  const port = await findAvailablePort(preferredPort);
-
-  if (port !== preferredPort) {
-    console.log(`Port ${preferredPort} is busy, using port ${port} instead`);
-  }
-
-  server.listen(port, '0.0.0.0', () => {
-    console.log(`Server running on http://0.0.0.0:${port}/`);
+  const port = parseInt(process.env.PORT || "3000", 10);
+  server.listen(port, "0.0.0.0", () => {
+    console.log("Server running on http://0.0.0.0:" + port + "/");
   });
 }
 
-startServer().catch(console.error);
+if (!process.env.VERCEL) {
+  startLocalServer().catch(console.error);
+}
+
+export default app;
