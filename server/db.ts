@@ -31,6 +31,7 @@ export async function getDb() {
     console.log("Conectando con pool robusto...");
     _pool = mysql.createPool({
       uri: process.env.DATABASE_URL,
+      ssl: { minVersion: "TLSv1.2", rejectUnauthorized: true },
       waitForConnections: true,
       connectionLimit: 10,
       queueLimit: 0,
