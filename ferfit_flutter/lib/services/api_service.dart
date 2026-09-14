@@ -1,5 +1,4 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+    return 'https://ferfit-apk.vercel.app/api/mobile';import 'package:http/http.dart' as http;
 import 'clerk_service.dart';
 import 'auth_storage.dart';
 import 'package:home_widget/home_widget.dart';
@@ -12,7 +11,7 @@ class ApiService {
     if (configured.isNotEmpty) return configured;
 
     // Servidor remoto FerFit (mobile API bajo /api/mobile)
-    return 'http://168.181.187.209:3000/api/mobile';
+    return 'https://ferfit-apk.vercel.app/api/mobile';
   }
 
   static String get baseHost {
