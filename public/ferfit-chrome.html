@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>FerFit — prueba Chrome</title>
+  <style>
+    :root { color-scheme: dark; }
+    body { font-family: Inter, system-ui, sans-serif; background: #0b0f14; color: #e8eef5; margin: 0; }
+    main { max-width: 420px; margin: 48px auto; padding: 24px; }
+    h1 { margin: 0 0 8px; font-size: 32px; }
+    p { color: #9aa8b5; }
+    label { display: block; margin: 12px 0 6px; font-size: 13px; }
+    input { width: 100%; box-sizing: border-box; padding: 12px; border-radius: 10px; border: 1px solid #2a3440; background: #121820; color: #fff; }
+    button { width: 100%; margin-top: 16px; padding: 12px; border: 0; border-radius: 10px; background: #22c55e; color: #04140a; font-weight: 700; cursor: pointer; }
+    pre { white-space: pre-wrap; background: #121820; padding: 12px; border-radius: 10px; font-size: 12px; }
+    .ok { color: #4ade80; }
+    .err { color: #f87171; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>FerFit</h1>
+    <p>Misma API que la APK, abierta en Chrome.</p>
+    <form id="f">
+      <label>Email</label>
+      <input id="email" type="email" required value="chrome-ui@ferfit.app" />
+      <label>Contraseña</label>
+      <input id="password" type="password" required minlength="8" value="FerfitTest123" />
+      <button type="submit">Crear cuenta / entrar</button>
+    </form>
+    <p id="status"></p>
+    <pre id="out"></pre>
+  </main>
+  <script>
+    const API = "/api/mobile";
+    const statusEl = document.getElementById("status");
+    const out = document.getElementById("out");
+    document.getElementById("f").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+      statusEl.textContent = "Conectando...";
+      statusEl.className = "";
+      try {
+        let sign = await fetch(API + "/auth/sign-in", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        });
+        if (sign.status === 401 || sign.status === 400) {
+          sign = await fetch(API + "/auth/sign-up", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ email, password, firstName: "Chrome" }),
+          });
+        }
+        const signBody = await sign.json();
+        if (!sign.ok || !signBody.token) throw new Error(signBody.error || "Login falló " + sign.status);
+        const token = signBody.token;
+        const auth = await fetch(API + "/auth", {
+          method: "POST",
+          headers: { "content-type": "application/json", Authorization: "Bearer " + token },
+        });
+        const dash = await fetch(API + "/dashboard", {
+          headers: { Authorization: "Bearer " + token },
+        });
+        const authBody = await auth.json();
+        const dashBody = await dash.json();
+        if (!auth.ok) throw new Error("Auth token: " + (authBody.error || auth.status));
+        if (!dash.ok) throw new Error("Dashboard: " + (dashBody.error || dash.status));
+        statusEl.textContent = "OK — login y dashboard funcionan";
+        statusEl.className = "ok";
+        out.textContent = JSON.stringify({
+          user: authBody.user && { name: authBody.user.name, email: authBody.user.email },
+          progress: dashBody.progress,
+        }, null, 2);
+      } catch (err) {
+        statusEl.textContent = String(err.message || err);
+        statusEl.className = "err";
+      }
+    });
+  </script>
+</body>
+</html>
